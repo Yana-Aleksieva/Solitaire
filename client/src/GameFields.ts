@@ -4,6 +4,7 @@ export class GameField {
   constructor(public app: PIXI.Application) {}
 
   createFields() {
+    console.log("create fields")
     let initial = 900;
     for (let i = 1; i <= 4; i++) {
       const field = new PIXI.Graphics();

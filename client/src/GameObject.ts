@@ -3,6 +3,6 @@ export class GameObject {
     constructor() {
 
     }
-
+    
     
 }
