@@ -53,11 +53,7 @@ document.body.appendChild(app.view);
 // += 455 
 const card = new PIXI.BaseTexture("/assets/sprite.jpg");
 
-
-
 const cards = createCards(card);
-
-
 
 cards[35].position.set(150,100)
 app.stage.addChild(cards[35]);
