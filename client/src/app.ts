@@ -40,7 +40,8 @@
 
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { createCards } from "./util";
+import { createCards, renderCards } from "./utils/Factory";
+import { Card } from "./Card";
 
 // add canvas
 const app = new PIXI.Application({
@@ -51,12 +52,6 @@ const app = new PIXI.Application({
 
 document.body.appendChild(app.view as HTMLCanvasElement);
 
-const card = new PIXI.BaseTexture("/assets/sprite.jpg");
-const cards = createCards(card);
-
-cards[35].position.set(60,50)
-app.stage.addChild(cards[35]);
-
 async function init() {
   await PIXI.Assets.load("/assets/sprite.jpg");
 }
@@ -66,4 +61,7 @@ init().then(start);
 async function start() {
   const field = new GameField(app);
   field.createFields();
+
+  const cards = renderCards();
+  app.stage.addChild(...cards.map((card) => card.get));
 }

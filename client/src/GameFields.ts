@@ -1,7 +1,12 @@
 import * as PIXI from "pixi.js";
+import { Card } from "./Card";
 
 export class GameField {
-  constructor(public app: PIXI.Application) {}
+  private cards: Card[];
+
+  constructor(public app: PIXI.Application) {
+    this.cards = [];
+  }
 
   createFields() {
     console.log("create fields")
