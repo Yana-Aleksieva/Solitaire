@@ -1,5 +1,5 @@
-import { Connection } from "./Connection";
-import { engine } from "./engine";
+import { Connection } from "./websocket/Connection";
+// import { engine } from "./engine";
 import * as PIXI from "pixi.js";
 
 const app = new PIXI.Application<HTMLCanvasElement>({
