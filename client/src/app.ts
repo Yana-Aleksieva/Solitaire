@@ -42,26 +42,43 @@ import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
 import { createCards, renderCards } from "./utils/Factory";
 import { Card } from "./Card";
+import { PixiPlugin } from "gsap/PixiPlugin";
+import gsap from "gsap";
+
+
+// register the plugin
+gsap.registerPlugin(PixiPlugin);
+
+// give the plugin a reference to the PIXI object
+PixiPlugin.registerPIXI(PIXI);
+
 
 // add canvas
 const app = new PIXI.Application({
     background: "0x006E33",
-    width: window.innerWidth,
-    height: window.innerHeight
+    width: window.innerWidth - 15,
+    height: window.innerHeight - 20
 });
 
 document.body.appendChild(app.view as HTMLCanvasElement);
 
 async function init() {
-  await PIXI.Assets.load("/assets/sprite.jpg");
+    await PIXI.Assets.load("/assets/sprite.jpg");
+    await PIXI.Assets.load("/assets/back.png");
+
+
 }
 
 init().then(start);
 
 async function start() {
-  const field = new GameField(app);
-  field.createFields();
+    const field = new GameField();
+    app.stage.addChild(field);
+    field.createFields();
 
-  const cards = renderCards();
-  app.stage.addChild(...cards.map((card) => card.get));
+    const cards = renderCards();
+    app.stage.addChild(...cards.map((card) => card.get));
+
+    
+   // app.stage.addChild(suite[30])
 }

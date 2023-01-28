@@ -1,5 +1,9 @@
 import * as PIXI from "pixi.js";
 import { Card } from "../Card";
+import gsap from "gsap";
+
+
+
 
 export function createCards(baseTexture: PIXI.BaseTexture) {
   const cards: Card[] = [];
@@ -36,6 +40,33 @@ export function renderCards(): Card[] {
   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
   const cards = createCards(cardTexture);
 
- // cards[0].position = 60;
+  // cards[0].position = 60;
   return cards;
 }
+
+export function createSuitsImages() {
+
+
+  const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
+  const suite: PIXI.Sprite[] = [];
+  let x = 50;
+
+  for (let i = 0; i < 32; i++) {
+
+
+    const texture = new PIXI.Texture(cardTexture, new PIXI.Rectangle(x, 3640, 186, 180));
+    const spriteCard = new PIXI.Sprite(texture);
+    // spriteCard.position.set(0, 0);
+    spriteCard.width = 140;
+    spriteCard.height = 190;
+
+    //
+
+    suite.push(spriteCard);
+
+    x += 183;
+  }
+
+  return suite;
+}
+
