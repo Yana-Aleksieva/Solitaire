@@ -60,6 +60,6 @@ init().then(start);
 async function start() {
   const basicField = new GameField(app);
   
-  const cards = renderCards();
+  const cards = renderCards(app);
   app.stage.addChild(...cards.map((card) => card.get));
 }

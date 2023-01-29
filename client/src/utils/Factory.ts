@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 import { Card } from "../Card";
 import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
 
-export function createCards(baseTexture: PIXI.BaseTexture) {
+export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application) {
   const cards: Card[] = [];
   let y = 850;
   let power = 0;
@@ -27,24 +27,9 @@ export function createCards(baseTexture: PIXI.BaseTexture) {
       spriteCard.mask = rect;
       container.addChild(spriteCard, rect);
 
-      const tempCardContainer = new PIXI.Container();
-
       // Add card name
-      const card = new Card(cardNames[i][j], container, power, tempCardContainer);
+      const card = new Card(cardNames[i][j], container, power, app);
       cards.push(card);
-
-      const tempCard = new PIXI.Graphics();
-      tempCard.beginFill(0.5);
-      tempCard.drawRect(0, 0, 240, 340);
-      tempCard.endFill();
-
-      tempCard.addChild(card);
-
-      tempCardContainer.addChild(tempCard, card);
-      tempCardContainer.position.set(300, 10);
-
-      container.addChild(tempCardContainer);
-
       x += 458;
       power++;
     }
@@ -53,8 +38,8 @@ export function createCards(baseTexture: PIXI.BaseTexture) {
   return cards;
 }
 
-export function renderCards(): Card[] {
+export function renderCards(app: PIXI.Application): Card[] {
   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-  const cards = createCards(cardTexture);
+  const cards = createCards(cardTexture, app);
   return cards;
 }
