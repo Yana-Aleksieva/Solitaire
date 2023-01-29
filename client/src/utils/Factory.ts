@@ -54,17 +54,17 @@ export function createSuitsImages() {
   for (let i = 0; i < 32; i++) {
 
 
-    const texture = new PIXI.Texture(cardTexture, new PIXI.Rectangle(x, 3640, 186, 180));
+    const texture = new PIXI.Texture(cardTexture, new PIXI.Rectangle(x, 3640, 185, 180));
     const spriteCard = new PIXI.Sprite(texture);
     // spriteCard.position.set(0, 0);
     spriteCard.width = 140;
-    spriteCard.height = 190;
+    spriteCard.height = 180;
 
     //
 
     suite.push(spriteCard);
 
-    x += 183;
+    x += 185;
   }
 
   return suite;

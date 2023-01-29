@@ -4,13 +4,11 @@ import { createSuitsImages } from "./utils/Factory";
 import gsap from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 
+const suite = createSuitsImages();
 
 
 
-// register the plugin
 gsap.registerPlugin(PixiPlugin);
-
-// give the plugin a reference to the PIXI object
 PixiPlugin.registerPIXI(PIXI);
 
 
@@ -18,74 +16,85 @@ export class GameField extends PIXI.Container {
 
   private cards: Card[];
   private _suite: PIXI.Sprite[];
+  private _border: PIXI.Graphics
+  private _position: { x: number, y: number }
+  private _image: PIXI.Sprite
 
 
-  constructor() {
+  constructor(
+    x: number, y: number, width: number, height: number, image?: PIXI.Sprite
+  ) {
     super();
     this.cards = [];
-    this._suite = createSuitsImages();
+    this._suite = suite;
+    this._image = image
+    this.width = width,
+      this.height = height,
+      this.position.x = x,
+      this.position.y = y,
+      this.createField()
 
   }
 
-  createFields() {
-    console.log("create fields")
-    let initial = 900;
+  setBorder() {
 
-    for (let i = 1; i <= 4; i++) {
-
-      const sprite = new PIXI.Sprite();
-
-      // const field = new PIXI.Graphics();
-      // field.beginFill(0x006E33, 0.5);
-      // field.drawRoundedRect(0, 0, 120, 150, 10);
-      // field.endFill();
-      const field = this._suite[i];
-
-      this.setFieldImage();
+    this._border = new PIXI.Graphics();
+    this._border.beginFill(0xFEFCFA);
+    this._border.drawRoundedRect(-4, -3, 150, 200, 10);
+    this._border.endFill();
+    this.addChild(this._border);
+  }
 
 
-      const border = new PIXI.Graphics();
-      border.beginFill(0xFEFCFA);
-      border.drawRoundedRect(-4, -3, 150, 200, 10);
-      border.endFill();
+  createField() {
 
-      sprite.addChild(border, field);
-      field.anchor.set(0.5);
-      field.position.set(70, 95);
-
-      //this.addMask(field);
-      // field.pivot.set(0.5);
-      // border.pivot.set(0.5);
-      sprite.anchor.set(0.5);
-      sprite.position.set(initial, 30);
-      initial += 200;
+    this.setBorder()
+    const sprite = new PIXI.Sprite();
 
 
-      this.addChild(sprite);
+    if (this._image !== undefined) {
+      
+      this.setFieldBackground(this._image);
+      this._image.anchor.set(0.5);
+      this._image.position.set(70, 95);
+      this.addMask(this._image);
+      sprite.addChild(this._image);
+    } else {
+      this.setBackground(sprite);
     }
+
+    sprite.anchor.set(0.5);
+    this.addChild(sprite);
+
   }
 
-  setSuitesAnchor() {
 
+  setBackground(parent: PIXI.Sprite) {
+
+    const rect = new PIXI.Graphics();
+    rect.beginFill(0x588C27);
+    rect.drawRoundedRect(0, 0, 140, 190, 10);
+    rect.endFill();
+
+    this.setFieldBackground(rect);
+    parent.addChild(rect);
   }
 
-  setFieldImage() {
 
-    gsap.set(this._suite, { pixi: { tint: 0x427C0C, alpha: 0.4 } });
+  setFieldBackground(image: PIXI.Graphics | PIXI.Sprite) {
+
+    gsap.set(image, { pixi: { tint: 0x427C0C, alpha: 0.4 } });
   }
 
   addMask(sprite: PIXI.Sprite) {
 
-
-
     const rect = new PIXI.Graphics();
 
     rect.beginFill(0xfffff);
-    rect.drawRoundedRect(0, 0, 150, 180, 10);
+    rect.drawRoundedRect(0, 0, 180, 180, 10);
     rect.endFill();
 
-    //  s.anchor.set(0.5);
-    rect.position.set(sprite.x, sprite.y);
+    rect.position.set(-90, -90);
     sprite.mask = rect;
     sprite.addChild(rect);
 
