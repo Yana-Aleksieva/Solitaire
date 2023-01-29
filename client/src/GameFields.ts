@@ -6,10 +6,10 @@ export class GameField {
 
   constructor(public app: PIXI.Application) {
     this.cards = [];
+    this.createFields();
   }
 
-  createFields() {
-    console.log("create fields")
+  private createFields() {
     let initial = 900;
     for (let i = 1; i <= 4; i++) {
       const field = new PIXI.Graphics();
@@ -19,6 +19,19 @@ export class GameField {
       initial += 245;
 
       this.app.stage.addChild(field);
+    }
+  }
+
+  addCard(card: Card) {
+    if (this.cards.length == 0) {
+      this.cards.push(card);
+    } else {
+      const lastCard = this.cards[this.cards.length - 1];
+      if (card.power > lastCard.power) {
+        this.cards.push(card);
+      } else {
+
+      }
     }
   }
 }

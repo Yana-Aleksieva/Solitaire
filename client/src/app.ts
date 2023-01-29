@@ -40,8 +40,7 @@
 
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { createCards, renderCards } from "./utils/Factory";
-import { Card } from "./Card";
+import { renderCards } from "./utils/Factory";
 
 // add canvas
 const app = new PIXI.Application({
@@ -59,9 +58,8 @@ async function init() {
 init().then(start);
 
 async function start() {
-  const field = new GameField(app);
-  field.createFields();
-
+  const basicField = new GameField(app);
+  
   const cards = renderCards();
   app.stage.addChild(...cards.map((card) => card.get));
 }
