@@ -86,4 +86,10 @@ async function start() {
   }
 
   app.stage.addChild(field, field1, field2, field3, ...cards.map((card) => card.get));
+//   const backSprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")) );
+//   backSprite.width = 140;
+//   backSprite.height = 190;
+//   backSprite.position.set(350, 400);
+//   app.stage.addChild(backSprite);
+//   console.log(cards[0])
 }

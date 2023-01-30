@@ -16,21 +16,21 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
 
       const texture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(x, y, 400, 620));
       const spriteCard = new PIXI.Sprite(texture);
-      
+
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
 
       //create mask
-      const rect = new PIXI.Graphics();
-      rect.beginFill(0x00000);
-      rect.drawRoundedRect(spriteCard.position.x, spriteCard.position.y, CARD_WIDTH, CARD_HEIGHT, 10);
-      rect.endFill();
+      // const rect = new PIXI.Graphics();
+      // rect.beginFill(0x00000);
+      // rect.drawRoundedRect(spriteCard.position.x, spriteCard.position.y, CARD_WIDTH, CARD_HEIGHT, 10);
+      // rect.endFill();
 
-      spriteCard.mask = rect;
-      container.addChild(spriteCard, rect);
+      // spriteCard.mask = rect;
+      // container.addChild(spriteCard, rect);
 
       // Add card name
-      const card = new Card(cardNames[i][j], container, power, app);
+      const card = new Card(cardNames[i][j], power, spriteCard, app);
       cards.push(card);
       x += 458;
       power++;

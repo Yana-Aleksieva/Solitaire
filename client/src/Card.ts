@@ -9,70 +9,103 @@ PixiPlugin.registerPIXI(PIXI);
 export class Card extends PIXI.DisplayObject {
   sortDirty: boolean;
 
-  calculateBounds(): void {}
-  removeChild(child: PIXI.DisplayObject): void {}
-  render(renderer: PIXI.Renderer): void {}
+  calculateBounds(): void { }
+  removeChild(child: PIXI.DisplayObject): void { }
+  render(renderer: PIXI.Renderer): void { }
 
   private _name: string;
-  private _spritesheet: PIXI.Spritesheet;
   private _container: PIXI.Container;
   private _power: number;
   private _dragging: boolean;
   private _position: { x: number; y: number };
+  private _back: PIXI.Sprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")));
+  private isActive: boolean = false;
+  private _sprite: PIXI.Sprite
+
 
   constructor(
     name: string,
-    container: PIXI.Container,
     power: number,
+    sprite: PIXI.Sprite,
     public app: PIXI.Application
   ) {
     super();
     this._name = name;
     this._power = power;
-    this._container = container;
+    this._container = new PIXI.Container();
     this._container.position.set(100, 100);
     this._container.pivot.set(CARD_WIDTH / 2);
     this._dragging = false;
-
+    this._sprite = sprite;
+    this._sprite.renderable = false;
+    this._container.addChild(this._back, this._sprite);
+    this._back.scale.set(0.38);
     this._container.interactive = true;
+
     this._container.on("pointerdown", (e) => {
       this._dragging = true;
-      this.setPosition(e.globalX, e.globalY);
+      //this.setPosition(e.globalX, e.globalY);
+
     });
     this._container.on("mousemove", (e) => {
       if (this._dragging) {
         this.setPosition(e.globalX, e.globalY);
+
       }
     });
 
     this._container.on("pointerup", (e) => {
       this._dragging = false;
+      // this._sprite.renderable = false;
+
       this.setPosition(e.globalX, e.globalY);
     });
 
     if (!this._dragging) {
       const nextCardCallback = () => {
         this.getNextCard();
+        this.isActive = true;
+        this._sprite.renderable = true;
+        this._back.renderable = false;
+
         this._container.removeEventListener("pointertap", nextCardCallback);
       };
       this._container.on("pointertap", nextCardCallback);
     }
   }
+  get sprite() {
+    return this._sprite;
+  }
+
+  set sprite(value: PIXI.Sprite) {
+
+    this._sprite = value;
+    this.addMask(this._sprite);
+
+    //this._sprite.alpha = 0;
+    this._sprite.renderable = false;
+  }
 
   get name() {
     return this._name;
   }
-  get spritesheet() {
-    return this._spritesheet;
-  }
+
 
   getNextCard() {
     if (!this._dragging) {
       gsap.to(this.get, {
-        pixi: { x: 300, y: 100, zIndex: 1 },
+        pixi: { x: 300, y: 100, zIndex: 0 },
         repeat: 0,
+        duration: 0.3,
         overwrite: true,
       });
+      // gsap.to(this.get, {
+      //   pixi: {zIndex: 2, },
+      //   repeat: 0,
+      //   duration: 0.3,
+      //  delay: 0.2,
+
+      // });
     }
   }
 
@@ -81,9 +114,7 @@ export class Card extends PIXI.DisplayObject {
     console.log(this.name);
   }
 
-  get texture() {
-    return this._spritesheet.textures;
-  }
+
 
   get get() {
     return this._container;
@@ -91,5 +122,21 @@ export class Card extends PIXI.DisplayObject {
 
   get power() {
     return this._power;
+  }
+
+  addMask(sprite: PIXI.Sprite) {
+
+    const rect = new PIXI.Graphics();
+    rect.beginFill(0xfffff);
+    rect.drawRoundedRect(this._sprite.x, this._sprite.y, 180, 180, 10);
+    rect.endFill();
+
+    //rect.position.set(this._sprite.x, this._sprite.y);
+    sprite.mask = rect;
+    sprite.addChild(rect);
+  }
+
+  flip() {
+
   }
 }
