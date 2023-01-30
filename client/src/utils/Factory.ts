@@ -17,7 +17,6 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
       const texture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(x, y, 400, 620));
       const spriteCard = new PIXI.Sprite(texture);
       
-      
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
 
@@ -38,7 +37,18 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
     }
     y += 660;
   }
+
+  shuffleCards(cards);
   return cards;
+}
+
+function shuffleCards(cards: Card[]) {
+  for (let i = cards.length - 1; i > 0; i -= 1) {
+    let randomIndex = Math.floor(Math.random() * (i + 1))
+    let temp = cards[i]
+    cards[i] = cards[randomIndex]
+    cards[randomIndex] = temp;
+  }
 }
 
 export function renderCards(app: PIXI.Application): Card[] {
