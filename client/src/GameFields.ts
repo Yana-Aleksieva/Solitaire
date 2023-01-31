@@ -15,17 +15,20 @@ export class GameField extends PIXI.Container {
   private _border: PIXI.Graphics;
   private _position: { x: number; y: number };
   private _image: PIXI.Sprite;
+  private _currentSuite: string;
 
   constructor(
     x: number,
     y: number,
     width: number,
     height: number,
+    currentSuite: string,
     image?: PIXI.Sprite
   ) {
     super();
     this.cards = [];
     this._suite = suite;
+    this._currentSuite = currentSuite;
     this._image = image;
     (this.width = width),
       (this.height = height),
@@ -57,6 +60,7 @@ export class GameField extends PIXI.Container {
     }
     sprite.anchor.set(0.5);
     this.addChild(sprite);
+    console.log(this._currentSuite)
   }
 
   private createFields() {

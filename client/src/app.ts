@@ -41,6 +41,7 @@
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
 import { createSuitsImages, renderCards } from "./utils/Factory";
+import { suites } from "./utils/constants";
 
 // add canvas
 const app = new PIXI.Application({
@@ -67,19 +68,19 @@ async function start() {
 
   // Dependency Injection ???
   const cards = renderCards(app);
-  const suites = createSuitsImages();
+  const suiteImages = createSuitsImages();
 
   //create fields
-  const field = new GameField(850, 30, 120, 150, suites[0]);
-  const field1 = new GameField(1100, 30, 120, 150, suites[1]);
-  const field2 = new GameField(1350, 30, 120, 150, suites[2]);
-  const field3 = new GameField(1600, 30, 120, 150, suites[3]);
+  const field = new GameField(850, 30, 120, 150, suites[0], suiteImages[0]);
+  const field1 = new GameField(1100, 30, 120, 150, suites[1], suiteImages[1]);
+  const field2 = new GameField(1350, 30, 120, 150, suites[2], suiteImages[2]);
+  const field3 = new GameField(1600, 30, 120, 150, suites[3], suiteImages[3]);
 
   const fields: PIXI.Container[] = [];
 
   let x = 100;
   for (let i = 0; i < 7; i++) {
-      let initialField = new GameField(x, 400, 120, 150);
+      let initialField = new GameField(x, 400, 120, 150, cards[i].suite);
       fields.push(initialField);
       app.stage.addChild(initialField);
       x += 250;

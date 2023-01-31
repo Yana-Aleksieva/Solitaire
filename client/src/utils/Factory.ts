@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import { Card } from "../Card";
 import gsap from "gsap";
-import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
+import { CARD_HEIGHT, CARD_WIDTH, names, suites } from "./constants";
 
 export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application) {
   const cards: Card[] = [];
@@ -30,7 +30,7 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
       container.addChild(spriteCard, rect);
 
       // Add card name
-      const card = new Card(cardNames[i][j], container, power, app);
+      const card = new Card(names[j], suites[i], container, power, app);
       cards.push(card);
       x += 458;
       power++;
@@ -38,6 +38,7 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
     y += 660;
   }
 
+  console.log(cards);
   shuffleCards(cards);
   return cards;
 }
