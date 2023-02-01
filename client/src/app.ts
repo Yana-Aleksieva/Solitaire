@@ -44,6 +44,7 @@ import { createSuitsImages, renderCards } from "./utils/Factory";
 import { gsap, random } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { CARD_WIDTH } from "./utils/constants";
+import { field, field1, field2, field3 } from "./utils/gameField";
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -74,11 +75,12 @@ async function start() {
     let cards = renderCards(app);
     const suites = createSuitsImages();
 
+    console.log(cards[0].name);
     //create fields
-    const field = new GameField(850, 30, 120, 150, suites[0]);
-    const field1 = new GameField(1100, 30, 120, 150, suites[1]);
-    const field2 = new GameField(1350, 30, 120, 150, suites[2]);
-    const field3 = new GameField(1600, 30, 120, 150, suites[3]);
+    // const field = new GameField(850, 30, 120, 150, "H", suites[0]); // hearts
+    // const field1 = new GameField(1100, 30, 120, 150,"S", suites[1]); // spades
+    // const field2 = new GameField(1350, 30, 120, 150,"D", suites[2]); // diamond
+    // const field3 = new GameField(1600, 30, 120, 150,"C", suites[3]); // club
 
     const fields: PIXI.Container[] = [];
 
@@ -95,8 +97,6 @@ async function start() {
     const cardsContainers = cards.map((card) => card.get);
 
     tl.to(cardsContainers,
-
-
         {
             pixi: {
 
@@ -111,8 +111,6 @@ async function start() {
                 from: 'random',
 
             },
-
-
         });
     tl.to(cardsContainers,
         {
@@ -127,7 +125,6 @@ async function start() {
             stagger: {
                 each: 0.1,
                 from: 'random',
-
             }
         }, '>');
 
@@ -139,21 +136,17 @@ async function start() {
     for (let i = 0; i < 7; i++) {
         let fieldIndex = 100 + i * 250;
 
-
         for (let j = i; j < 7; j++) {
-
             const f = fields[j];
 
             const card = cardsContainers[cardsContainers.length - index - 1];
             const cardContainer = cards[cards.length - index - 1]
             tl.to(card,
-
                 {
                     pixi: { x: f.x, y: f.y + positionIndex },
                     duration: 0.3,
                     ease: "power2.inOut",
                     onComplete: () => {
-
                         f.addChild(card);
                         card.position.x = 70;
                         card.position.y -= 320;
@@ -161,18 +154,12 @@ async function start() {
                             cardContainer.flip();
                             //cardContainer.isActive = true;
                         }
-
                     }
                 }, '>');
           
             index++;
             fieldIndex += 250;
         }
-
         positionIndex += 40;
     }
-
-
-
-
 }

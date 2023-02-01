@@ -4,14 +4,14 @@ import { createSuitsImages } from "./utils/Factory";
 import gsap from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 
-const suite = createSuitsImages();
+//const suite = createSuitsImages();
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
 export class GameField extends PIXI.Container {
   private cards: Card[];
-  private _suite: PIXI.Sprite[];
+  private _suite: string;
   private _border: PIXI.Graphics;
   private _position: { x: number; y: number };
   private _image: PIXI.Sprite;
@@ -21,6 +21,7 @@ export class GameField extends PIXI.Container {
     y: number,
     width: number,
     height: number,
+    suite?: string,
     image?: PIXI.Sprite
   ) {
     super();
@@ -32,6 +33,15 @@ export class GameField extends PIXI.Container {
       (this.position.x = x),
       (this.position.y = y),
       this.createField();
+      this.on("pointerdown", () => {console.log("click")})
+  }
+
+  get suite() {
+    return this._suite;
+  }
+
+  getCards() {
+    return this.cards;
   }
 
   setBorder() {
@@ -98,14 +108,10 @@ export class GameField extends PIXI.Container {
   }
 
   addCard(card: Card) {
-    if (this.cards.length == 0) {
+    if (!this.cards.some((c) => c.name == card.name)) {
       this.cards.push(card);
-    } else {
-      const lastCard = this.cards[this.cards.length - 1];
-      if (card.power > lastCard.power) {
-        this.cards.push(card);
-      } else {
-      }
+      return true;
     }
+    return false;
   }
 }

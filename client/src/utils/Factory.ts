@@ -2,14 +2,18 @@ import * as PIXI from "pixi.js";
 import { Card } from "../Card";
 import gsap from "gsap";
 import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
+import { GameField } from "../GameFields";
 
 export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application) {
   const cards: Card[] = [];
   let y = 850;
   let power = 0;
 
+  let suites = ["C", "H", "S", "D"];
+
   for (let i = 0; i <= 3; i++) {
     let x = 50;
+    let suite = suites[i];
     for (let j = 0; j <= 12; j++) {
       const container = new PIXI.Container();
       container.position.set(100, 100);
@@ -30,7 +34,7 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
       // container.addChild(spriteCard, rect);
 
       // Add card name
-      const card = new Card(cardNames[i][j], power, spriteCard, app);
+      const card = new Card(cardNames[i][j], power, spriteCard, suite, app);
       cards.push(card);
       x += 458;
       power++;
@@ -75,3 +79,11 @@ export function createSuitsImages() {
   return suite;
 }
 
+export function addCardInGameField(gameField: GameField, card: Card) {
+  if (gameField.suite == card.suite) {
+    gameField.addCard(card);
+    console.log(gameField.getCards())
+  } else {
+    console.log(`Gamefield suite: ${gameField.suite}, card suite: ${card.suite}`)
+  }
+}
