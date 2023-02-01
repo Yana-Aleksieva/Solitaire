@@ -1,17 +1,17 @@
 import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
-import { CARD_WIDTH } from "./utils/constants";
+import { CARD_HEIGHT, CARD_WIDTH } from "./utils/constants";
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
-export class Card extends PIXI.DisplayObject {
+export class Card extends PIXI.Container {
   sortDirty: boolean;
 
-  calculateBounds(): void { }
-  removeChild(child: PIXI.DisplayObject): void { }
-  render(renderer: PIXI.Renderer): void { }
+  // calculateBounds(): void { }
+  // removeChild(child: PIXI.DisplayObject): void { }
+  // render(renderer: PIXI.Renderer): void { }
 
   private _name: string;
   private _container: PIXI.Container;
@@ -19,7 +19,7 @@ export class Card extends PIXI.DisplayObject {
   private _dragging: boolean;
   private _position: { x: number; y: number };
   private _back: PIXI.Sprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")));
-  private isActive: boolean = false;
+ isActive: boolean = false;
   private _sprite: PIXI.Sprite
 
 
@@ -30,6 +30,7 @@ export class Card extends PIXI.DisplayObject {
     public app: PIXI.Application
   ) {
     super();
+    this.interactive = true
     this._name = name;
     this._power = power;
     this._container = new PIXI.Container();
@@ -41,6 +42,7 @@ export class Card extends PIXI.DisplayObject {
     this._container.addChild(this._back, this._sprite);
     this._back.scale.set(0.38);
     this._container.interactive = true;
+
 
     this._container.on("pointerdown", (e) => {
       this._dragging = true;
@@ -56,12 +58,12 @@ export class Card extends PIXI.DisplayObject {
 
     this._container.on("pointerup", (e) => {
       this._dragging = false;
-      // this._sprite.renderable = false;
+
 
       this.setPosition(e.globalX, e.globalY);
     });
 
-    if (!this._dragging) {
+    if (!this._dragging && !this.isActive) {
       const nextCardCallback = () => {
         this.getNextCard();
         this.isActive = true;
@@ -82,7 +84,6 @@ export class Card extends PIXI.DisplayObject {
     this._sprite = value;
     this.addMask(this._sprite);
 
-    //this._sprite.alpha = 0;
     this._sprite.renderable = false;
   }
 
@@ -96,16 +97,9 @@ export class Card extends PIXI.DisplayObject {
       gsap.to(this.get, {
         pixi: { x: 300, y: 100, zIndex: 0 },
         repeat: 0,
-        duration: 0.3,
+        duration: 0.5,
         overwrite: true,
       });
-      // gsap.to(this.get, {
-      //   pixi: {zIndex: 2, },
-      //   repeat: 0,
-      //   duration: 0.3,
-      //  delay: 0.2,
-
-      // });
     }
   }
 
@@ -114,6 +108,10 @@ export class Card extends PIXI.DisplayObject {
     console.log(this.name);
   }
 
+  public flip() {
+    this._back.renderable = false;
+    this._sprite.renderable = true;
+  }
 
 
   get get() {
@@ -136,7 +134,5 @@ export class Card extends PIXI.DisplayObject {
     sprite.addChild(rect);
   }
 
-  flip() {
 
-  }
 }

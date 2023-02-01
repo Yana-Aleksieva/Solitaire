@@ -41,7 +41,12 @@
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
 import { createSuitsImages, renderCards } from "./utils/Factory";
+import { gsap, random } from "gsap";
+import { PixiPlugin } from "gsap/PixiPlugin";
+import { CARD_WIDTH } from "./utils/constants";
 
+gsap.registerPlugin(PixiPlugin);
+PixiPlugin.registerPIXI(PIXI);
 // add canvas
 const app = new PIXI.Application({
     background: "0x006E33",
@@ -59,37 +64,115 @@ async function init() {
 init().then(start);
 
 async function start() {
-  // const field = new GameField(0, 0, 300, 300);
-  // field.createField();
+    // const field = new GameField(0, 0, 300, 300);
+    // field.createField();
 
-  // const cards = renderCards(app);
-  // app.stage.addChild(...cards.map((card) => card.get));
+    // const cards = renderCards(app);
+    // app.stage.addChild(...cards.map((card) => card.get));
 
-  // Dependency Injection ???
-  const cards = renderCards(app);
-  const suites = createSuitsImages();
+    // Dependency Injection ???
+    let cards = renderCards(app);
+    const suites = createSuitsImages();
 
-  //create fields
-  const field = new GameField(850, 30, 120, 150, suites[0]);
-  const field1 = new GameField(1100, 30, 120, 150, suites[1]);
-  const field2 = new GameField(1350, 30, 120, 150, suites[2]);
-  const field3 = new GameField(1600, 30, 120, 150, suites[3]);
+    //create fields
+    const field = new GameField(850, 30, 120, 150, suites[0]);
+    const field1 = new GameField(1100, 30, 120, 150, suites[1]);
+    const field2 = new GameField(1350, 30, 120, 150, suites[2]);
+    const field3 = new GameField(1600, 30, 120, 150, suites[3]);
 
-  const fields: PIXI.Container[] = [];
+    const fields: PIXI.Container[] = [];
 
-  let x = 100;
-  for (let i = 0; i < 7; i++) {
-      let initialField = new GameField(x, 400, 120, 150);
-      fields.push(initialField);
-      app.stage.addChild(initialField);
-      x += 250;
-  }
+    let x = 100;
+    for (let i = 0; i < 7; i++) {
+        let initialField = new GameField(x, 400, 120, 150);
+        fields.push(initialField);
+        app.stage.addChild(initialField);
+        x += 250;
+    }
 
-  app.stage.addChild(field, field1, field2, field3, ...cards.map((card) => card.get));
-//   const backSprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")) );
-//   backSprite.width = 140;
-//   backSprite.height = 190;
-//   backSprite.position.set(350, 400);
-//   app.stage.addChild(backSprite);
-//   console.log(cards[0])
+    app.stage.addChild(field, field1, field2, field3, ...cards.map((card) => card.get));
+    const tl = gsap.timeline();
+    const cardsContainers = cards.map((card) => card.get);
+
+    tl.to(cardsContainers,
+
+
+        {
+            pixi: {
+
+                x: 300,
+                y: 100
+            },
+            duration: 0.1,
+            repeat: 0,
+            delay: 1,
+            stagger: {
+                each: 0.1,
+                from: 'random',
+
+            },
+
+
+        });
+    tl.to(cardsContainers,
+        {
+            pixi: {
+
+                x: 100,
+                y: 100
+            },
+            duration: 0.1,
+            repeat: 0,
+            ease: "power2.inOut",
+            stagger: {
+                each: 0.1,
+                from: 'random',
+
+            }
+        }, '>');
+
+    // card animation to initial fields
+
+    let index = 0;
+    let positionIndex = 0;
+
+    for (let i = 0; i < 7; i++) {
+        let fieldIndex = 100 + i * 250;
+
+
+        for (let j = i; j < 7; j++) {
+
+            const f = fields[j];
+
+            const card = cardsContainers[cardsContainers.length - index - 1];
+            const cardContainer = cards[cards.length - index - 1]
+            tl.to(card,
+
+                {
+                    pixi: { x: f.x, y: f.y + positionIndex },
+                    duration: 0.3,
+                    ease: "power2.inOut",
+                    onComplete: () => {
+
+                        f.addChild(card);
+                        card.position.x = 70;
+                        card.position.y -= 320;
+                        if (j == i) {
+                            cardContainer.flip();
+                            //cardContainer.isActive = true;
+                        }
+
+                    }
+                }, '>');
+          
+            index++;
+            fieldIndex += 250;
+        }
+
+        positionIndex += 40;
+    }
+
+
+
+
 }
