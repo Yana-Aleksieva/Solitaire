@@ -7,12 +7,13 @@ import { GameField } from "../GameFields";
 export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application) {
   const cards: Card[] = [];
   let y = 850;
-  let power = 0;
+
 
   let suites = ["C", "H", "S", "D"];
 
   for (let i = 0; i <= 3; i++) {
     let x = 50;
+    let power = 0;
     let suite = suites[i];
     for (let j = 0; j <= 12; j++) {
       const container = new PIXI.Container();

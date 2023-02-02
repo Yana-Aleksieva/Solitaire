@@ -10,7 +10,7 @@ gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
 export class GameField extends PIXI.Container {
-  private cards: Card[];
+  private cards: Card[] = [];
   private _suite: string;
   private _border: PIXI.Graphics;
   private _position: { x: number; y: number };
@@ -33,12 +33,13 @@ export class GameField extends PIXI.Container {
       (this.position.x = x),
       (this.position.y = y),
       this.createField();
-      this.on("pointerdown", () => {console.log("click")})
+    //this.on("pointerdown", () => { console.log("click") })
   }
 
   get suite() {
     return this._suite;
   }
+  
 
   getCards() {
     return this.cards;
@@ -69,17 +70,7 @@ export class GameField extends PIXI.Container {
     this.addChild(sprite);
   }
 
-  private createFields() {
-    let initial = 900;
-    for (let i = 1; i <= 4; i++) {
-      const field = new PIXI.Graphics();
-      field.beginFill(0, 0.1);
-      field.drawRoundedRect(initial, 30, 200, 350, 10);
-      field.endFill();
-      initial += 245;
-      //this.app.stage.addChild(field);
-    }
-  }
+
 
   setBackground(parent: PIXI.Sprite) {
     const rect = new PIXI.Graphics();
@@ -113,5 +104,16 @@ export class GameField extends PIXI.Container {
       return true;
     }
     return false;
+  }
+
+  removeCard(card: Card) {
+    let index = this.cards.indexOf(card);
+    if (index != -1) {
+      this.cards.splice(index, 1);
+    }
+  }
+
+  getLastCard() {
+    return this.cards[this.cards.length - 1];
   }
 }
