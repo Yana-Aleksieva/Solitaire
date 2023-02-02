@@ -3,6 +3,7 @@ import { Card } from "./Card";
 import { createSuitsImages } from "./utils/Factory";
 import gsap from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
+import { Container } from "pixi.js";
 
 //const suite = createSuitsImages();
 
@@ -10,13 +11,15 @@ gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
 export class GameField extends PIXI.Container {
-  private cards: Card[];
+  private cards: Card[] = [];
   private _suite: string;
   private _border: PIXI.Graphics;
   private _position: { x: number; y: number };
   private _image: PIXI.Sprite;
-  private _imageContainer: PIXI.Container;
 
+  private _imageContainer: PIXI.Container;
+  private data = null;
+  private _dragging = false;
   constructor(
     x: number,
     y: number,
@@ -34,6 +37,7 @@ export class GameField extends PIXI.Container {
       (this.position.x = x),
       (this.position.y = y),
       this.createField();
+
       this._imageContainer = new PIXI.Container();
       this.addChild(this._imageContainer);
       //this.on("pointerdown", () => {console.log("click")})
@@ -72,17 +76,7 @@ export class GameField extends PIXI.Container {
     this.addChild(sprite);
   }
 
-  private createFields() {
-    let initial = 900;
-    for (let i = 1; i <= 4; i++) {
-      const field = new PIXI.Graphics();
-      field.beginFill(0, 0.1);
-      field.drawRoundedRect(initial, 30, 200, 350, 10);
-      field.endFill();
-      initial += 245;
-      //this.app.stage.addChild(field);
-    }
-  }
+
 
   setBackground(parent: PIXI.Sprite) {
     const rect = new PIXI.Graphics();
@@ -95,7 +89,8 @@ export class GameField extends PIXI.Container {
   }
 
   setFieldBackground(image: PIXI.Graphics | PIXI.Sprite) {
-    gsap.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } });
+    const tl = gsap.timeline();
+    tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(()=>tl.pause());
   }
 
   addMask(sprite: PIXI.Sprite) {
@@ -129,4 +124,15 @@ export class GameField extends PIXI.Container {
     }
     this.renderCards();
   }
+
+  removeCard(card: Card) {
+    let index = this.cards.indexOf(card);
+    if (index != -1) {
+      this.cards.splice(index, 1);
+    }
+  }
+
+  getLastCard() {
+    return this.cards[this.cards.length - 1];
+  } 
 }

@@ -40,11 +40,12 @@
 
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { createSuitsImages, renderCards } from "./utils/Factory";
+import { addCardInGameField, createSuitsImages, deal, renderCards } from "./utils/Factory";
 import { gsap, random } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
-import { CARD_WIDTH } from "./utils/constants";
+import { CARD_HEIGHT, CARD_WIDTH } from "./utils/constants";
 import { field, field1, field2, field3 } from "./utils/gameField";
+import { Tank } from "./Tank";
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -57,23 +58,102 @@ const app = new PIXI.Application({
 
 document.body.appendChild(app.view as HTMLCanvasElement);
 
+
+// Dependency Injection ???
+let cards = renderCards(app);
+const suites = createSuitsImages();
+const fields: GameField[] = [];
+//add container to position 100:100
+// const container = new Tank(100, 100, onClick.bind(null));
+const container = new Tank(100, 100);
+//flip container
+//const flipContainer = new Tank(300, 100, onMove.bind(null));
+const flipContainer = new Tank(300, 100,);
+const tl = gsap.timeline();
+
+
 async function init() {
     await PIXI.Assets.load("/assets/sprite.jpg");
     await PIXI.Assets.load("/assets/back.png");
 }
 
-init().then(start);
+init().then(start).then(
+    function deal() {
+        tl.to(cards,
+            {
+                pixi: {
 
-async function start() {
-    // const field = new GameField(0, 0, 300, 300);
-    // field.createField();
+                    x: 300,
+                    y: 100
+                },
+                duration: 0.1,
+                repeat: 0,
+                delay: 1,
+                stagger: {
+                    each: 0.1,
+                    from: 'random',
 
-    // const cards = renderCards(app);
-    // app.stage.addChild(...cards.map((card) => card.get));
+                },
+            });
 
-    // Dependency Injection ???
-    let cards = renderCards(app);
-    const suites = createSuitsImages();
+        +       tl.to(cards,
+            {
+                pixi: {
+
+                    x: 100,
+                    y: 100
+                },
+                duration: 0.1,
+                repeat: 0,
+                ease: "power2.inOut",
+                stagger: {
+                    each: 0.1,
+                    from: 'random',
+                }
+            }, '>');
+
+      //  card animation to initial fields
+
+        let index = 0;
+        let positionIndex = 0;
+
+        for (let i = 0; i < 7; i++) {
+            let fieldIndex = 100 + i * 250;
+
+            for (let j = i; j < 7; j++) {
+                const f: GameField = fields[j];
+
+                const card = cards[cards.length - index - 1];
+                const cardContainer = cards[cards.length - index - 1]
+                tl.to(card,
+                    {
+                        pixi: { x: f.x, y: f.y + positionIndex },
+                        duration: 0.3,
+                        ease: "power2.inOut",
+                        onComplete: () => {
+                            f.addChild(card);
+                            //f.addCard(card)
+                            f.addCard(card);
+                            container.remove(card);
+                            card.position.x = 70;
+                            card.position.y -= 320;
+                            if (j == i) {
+                                // console.log(cardContainer
+                                //     )
+                                card.flip();
+                                card.isActive = true;
+
+                            }
+                        }
+                    }, '>').then(() => tl.pause());
+
+                index++;
+                fieldIndex += 250;
+            }
+            positionIndex += 40;
+        }
+
+    })
 
     // cards.forEach((card) => {
     //   field.addCard(card.sprite);
@@ -88,12 +168,14 @@ async function start() {
     //field.addCard(cards[1].sprite);
 
     console.log(field.getCards())
-    const fields: PIXI.Container[] = [];
+    //const fields: PIXI.Container[] = [];
 
+async function start() {
     let x = 100;
     for (let i = 0; i < 7; i++) {
         let initialField = new GameField(x, 400, 120, 150);
         fields.push(initialField);
+
         app.stage.addChild(initialField);
         x += 250;
     }
@@ -168,4 +250,39 @@ async function start() {
     //     }
     //     positionIndex += 40;
     // }
+}
+
+    app.stage.addChild(field, field1, field2, field3, container, flipContainer);
+    // const cardsContainers = cards.map((card) => card.get);
+    cards.forEach(c => {
+        container.add(c);
+        //container.push(c);
+    })
+    // container.addChild(...cards);
+
+
+function onClick() {
+
+    const current = container.cards[container.cards.length - 1];
+    container.remove(current)
+    flipContainer.add(current);
+}
+
+function onMove() {
+    console.log('pointertap')
+    let currentCard = flipContainer.cards[flipContainer.cards.length - 1];
+    for (let i = 0; i < 7; i++) {
+        let field = fields[i];
+        //field.removeCard()
+        const cardOnField = field.getLastCard()
+        console.log(field.getLastCard().color);
+        console.log(currentCard.power, cardOnField.power);
+        if (currentCard.power + 1 == cardOnField.power
+            && currentCard.color != cardOnField.color) {
+            flipContainer.remove(currentCard);
+            field.addChild(currentCard);
+            field.addCard(currentCard);
+            currentCard.setPosition(field.getLastCard().x - CARD_WIDTH / 2, field.getLastCard().y + CARD_HEIGHT / 2)
+        }
+    }
 }
