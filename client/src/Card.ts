@@ -17,6 +17,7 @@ export class Card extends PIXI.Container {
   private _container: PIXI.Container;
   _color: SuitCard;
   _power: number;
+  data
   private _dragging: boolean;
   private _position: { x: number; y: number };
   private _back: PIXI.Sprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")));
@@ -47,50 +48,11 @@ export class Card extends PIXI.Container {
     this._back.scale.set(0.38);
     this.interactive = true;
 
+    this.on('pointertap', this.onClick);
+    this.on('mousedown', this.onDragStart)
+    this.on('mouseup', this.onDragEnd)
+    this.on('mousemove', this.onDragMove);
 
-    // this._container.on("pointerdown", (e) => {
-    //   this._dragging = true;
-    //   //this.setPosition(e.globalX, e.globalY);
-
-    // });
-    // this._container.on("mousemove", (e) => {
-    //   // 930
-    //   // 1180
-    //   // 1430
-    //   // 1680
-    //   if (this._dragging) {
-    //     this.setPosition(e.globalX, e.globalY);
-    //     this._position = { x: e.globalX, y: e.globalY }
-
-    //     console.log(e.globalX)
-    //     if (e.globalX == 930) {
-    //       addCardInGameField(field, this);
-    //     } else if (e.globalX == 1180) {
-    //       addCardInGameField(field1, this);
-    //     } else if (e.globalX == 1430) {
-    //       addCardInGameField(field2, this);
-    //     } else if (e.globalX == 1680) {
-    //       addCardInGameField(field3, this);
-    //     }
-    //   }
-    // });
-
-    // this._container.on("pointerup", (e) => {
-    //   this._dragging = false;
-    //   this.setPosition(e.globalX, e.globalY);
-    // });
-
-    // if (!this._dragging && !this.isActive) {
-    //   const nextCardCallback = () => {
-    //     this.getNextCard();
-    //     this.isActive = true;
-    //     this._sprite.renderable = true;
-    //     this._back.renderable = false;
-
-    //   //  this._container.removeEventListener("pointertap", nextCardCallback);
-    //   };
-    //   //this._container.on("pointertap", nextCardCallback);
-    // }
   }
 
   get sprite() {
@@ -142,6 +104,7 @@ export class Card extends PIXI.Container {
   flip() {
     this._back.renderable = false;
     this._sprite.renderable = true;
+    this.isActive = true;
   }
 
 
@@ -166,4 +129,70 @@ export class Card extends PIXI.Container {
   }
 
 
+  onDragStart(e) {
+    // store a reference to the data
+    // the reason for this is because of multitouch
+    // we want to track the movement of this particular touch
+    this.data = e.data;
+    this._dragging = true;
+
+  }
+  onDragEnd(e) {
+    // this.alpha = 1;
+
+
+    // set the interaction data to null
+    this.data = null;
+    //this.position.set(e.globalX, e.globalY);
+
+    this._dragging = false;
+    //this.removeEventListener('on')
+  }
+
+  onDragMove(e) {
+    if (this._dragging) {
+      // console.log('clicked');
+      if (this.parent) {
+        console.log(this.parent);
+        this.parent.removeChild(this);
+        this.position.x = e.globalX;
+        this.position.y = e.globalY;
+        this.app.stage.addChild(this)
+      } else {
+
+      }
+
+      //  this.pivot.set(200)
+      // const index = this.cards.indexOf(e.target);
+      //const cardsArr = this.cards.slice(index);
+      // console.log(cardsArr);
+      // let container = new Container();
+      // console.log(this._dragging);
+      //console.log(e.target.position);
+      // gsap.to(this, {
+      //   duration: 0.5,
+      //   overwrite: true,
+      //   x: e.globalX,
+      //   y: e.globalY,
+      //   //stagger: 0.15,
+      //   ease: "none"
+      // });
+      // cardsArr.forEach(c => {
+      // c.pivot.set(200, 200);
+      //c.position.set(e.globalX, e.globalY)
+      // })
+      // cardsArr[0].position.x = e.globalX;
+      // cardsArr[0].position.y = e.globalX;
+      // this.position.set (e.globalX, e.globalY)
+    }
+  }
+
+
+  onClick(e) {
+
+    if (!this.isActive) {
+      this.flip();
+      this.position.set(200, 100)
+    }
+  }
 }

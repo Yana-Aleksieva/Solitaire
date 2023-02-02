@@ -1,6 +1,5 @@
 import * as PIXI from "pixi.js";
 import { Card } from "../Card";
-import gsap from "gsap";
 import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
 import { GameField } from "../GameFields";
 
@@ -87,4 +86,9 @@ export function addCardInGameField(gameField: GameField, card: Card) {
   } else {
     console.log(`Gamefield suite: ${gameField.suite}, card suite: ${card.suite}`)
   }
+}
+
+export function deal(cards: Card[], fields: GameField[], container, tl: GSAPTimeline) : void{
+
+ 
 }

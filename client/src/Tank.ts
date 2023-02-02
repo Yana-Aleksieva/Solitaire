@@ -12,14 +12,14 @@ export class Tank extends Container {
     constructor(
         x: number,
         y: number,
-        private callback: () => void
+       // private callback: () => void
     ) {
 
         super();
         this.pivot.set(100);
         this.position.set(x, y);
         this.interactive = true;
-        this.on('pointertap', this.onClick.bind(this));
+        //this.on('pointertap', this.onClick.bind(this));
     }
 
 
@@ -34,17 +34,17 @@ export class Tank extends Container {
         return current[0];
     }
 
-    onClick() {
-        console.log('click');
-        const len = this.cards.length;
-        const currentCard = this.cards[len - 1];
-        this.callback();
-        currentCard.flip();
-       // this.remove(currentCard);
+    // onClick() {
+    //     console.log('click');
+    //     const len = this.cards.length;
+    //     const currentCard = this.cards[len - 1];
+    //     //this.callback();
+    //     currentCard.flip();
+    //    // this.remove(currentCard);
         
 
 
-    }
+    // }
 
     remove(card: Card) {
         this.removeChild(card);
