@@ -42,6 +42,7 @@ export class Card extends PIXI.Container {
     this._container.addChild(this._back, this._sprite);
     this._back.scale.set(0.38);
     this._container.interactive = true;
+    this._container.addChild(this);
 
 
     this._container.on("pointerdown", (e) => {
@@ -61,12 +62,16 @@ export class Card extends PIXI.Container {
         console.log(e.globalX)
         if (e.globalX == 930) {
           addCardInGameField(field, this);
+          this.setPosition(-100, -100);
         } else if (e.globalX == 1180) {
           addCardInGameField(field1, this);
+          this.setPosition(-100, -100);
         } else if (e.globalX == 1430) {
           addCardInGameField(field2, this);
+          this.setPosition(-100, -100);
         } else if (e.globalX == 1680) {
           addCardInGameField(field3, this);
+          this.setPosition(-100, -100);
         }
       }
     });
@@ -89,7 +94,7 @@ export class Card extends PIXI.Container {
     }
   }
 
-  get sprite() {
+  get sprite(): PIXI.Sprite {
     return this._sprite;
   }
 
@@ -131,7 +136,6 @@ export class Card extends PIXI.Container {
     this._sprite.renderable = true;
   }
 
-
   get get() {
     return this._container;
   }
@@ -141,16 +145,12 @@ export class Card extends PIXI.Container {
   }
 
   addMask(sprite: PIXI.Sprite) {
-
     const rect = new PIXI.Graphics();
     rect.beginFill(0xfffff);
     rect.drawRoundedRect(this._sprite.x, this._sprite.y, 180, 180, 10);
     rect.endFill();
-
     //rect.position.set(this._sprite.x, this._sprite.y);
     sprite.mask = rect;
     sprite.addChild(rect);
   }
-
-
 }
