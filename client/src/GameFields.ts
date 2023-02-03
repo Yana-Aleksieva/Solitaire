@@ -35,7 +35,7 @@ export class GameField extends PIXI.Container {
       (this.position.x = x),
       (this.position.y = y),
       this.createField();
-  
+
 
   }
 
@@ -87,7 +87,7 @@ export class GameField extends PIXI.Container {
 
   setFieldBackground(image: PIXI.Graphics | PIXI.Sprite) {
     const tl = gsap.timeline();
-    tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(()=>tl.pause());
+    tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(() => tl.pause());
   }
 
   addMask(sprite: PIXI.Sprite) {
@@ -120,6 +120,8 @@ export class GameField extends PIXI.Container {
   getLastCard() {
     return this.cards[this.cards.length - 1];
   }
+  add(card: Card) {
+    this.cards.push(card);
+  }
 
- 
 }

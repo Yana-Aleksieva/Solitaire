@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { CARD_HEIGHT, CARD_WIDTH } from "./utils/constants";
-import { addCardInGameField } from "./utils/Factory";
+import { addCardInGameField, getFields } from "./utils/Factory";
 import { field, field1, field2, field3 } from "./utils/gameField";
 import { SuitCard } from "./utils/types";
 
@@ -18,6 +18,7 @@ export class Card extends PIXI.Container {
   _color: SuitCard;
   _power: number;
   data
+  onStart: boolean = true;
   private _dragging: boolean;
   private _position: { x: number; y: number };
   private _back: PIXI.Sprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")));
@@ -31,6 +32,8 @@ export class Card extends PIXI.Container {
 
     sprite: PIXI.Sprite,
     public suite: string,
+    private callback: () => void,
+    private callback1: () => void,
     public app: PIXI.Application
   ) {
     super();
@@ -48,10 +51,10 @@ export class Card extends PIXI.Container {
     this._back.scale.set(0.38);
     this.interactive = true;
 
-    this.on('pointertap', this.onClick);
-    this.on('mousedown', this.onDragStart)
-    this.on('mouseup', this.onDragEnd)
-    this.on('mousemove', this.onDragMove);
+    this.on('pointertap', this.onClick.bind(this));
+    this.on('mousedown', this.onDragStart.bind(this))
+    this.on('mouseup', this.onDragEnd.bind(this))
+    this.on('mousemove', this.onDragMove.bind(this));
 
   }
 
@@ -130,34 +133,28 @@ export class Card extends PIXI.Container {
 
 
   onDragStart(e) {
-    // store a reference to the data
-    // the reason for this is because of multitouch
-    // we want to track the movement of this particular touch
+
     this.data = e.data;
     this._dragging = true;
 
   }
   onDragEnd(e) {
-    // this.alpha = 1;
-
-
-    // set the interaction data to null
-    this.data = null;
-    //this.position.set(e.globalX, e.globalY);
 
     this._dragging = false;
-    //this.removeEventListener('on')
+  //  this.callback();
+    //this.position.set(e.globalX, e.globalY)
   }
 
   onDragMove(e) {
     if (this._dragging) {
-      // console.log('clicked');
+
       if (this.parent) {
-        console.log(this.parent);
+
         this.parent.removeChild(this);
         this.position.x = e.globalX;
         this.position.y = e.globalY;
-        this.app.stage.addChild(this)
+        this.app.stage.addChild(this);
+       // this.callback();
       } else {
 
       }
@@ -192,7 +189,20 @@ export class Card extends PIXI.Container {
 
     if (!this.isActive) {
       this.flip();
-      this.position.set(200, 100)
+      if (this.onStart) {
+        this.callback1();
+        //this.sendCard(e)
+      } else {
+        // 
+     
+      }
+
+    } else {
+      this.callback();
     }
+  }
+
+  sendCard(e) {
+
   }
 }

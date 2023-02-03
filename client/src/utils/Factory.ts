@@ -3,7 +3,7 @@ import { Card } from "../Card";
 import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
 import { GameField } from "../GameFields";
 
-export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application) {
+export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application, onMove, onClick) {
   const cards: Card[] = [];
   let y = 850;
 
@@ -34,7 +34,7 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
       // container.addChild(spriteCard, rect);
 
       // Add card name
-      const card = new Card(cardNames[i][j], power, spriteCard, suite, app);
+      const card = new Card(cardNames[i][j], power, spriteCard, suite, onMove, onClick, app);
       cards.push(card);
       x += 458;
       power++;
@@ -55,9 +55,9 @@ function shuffleCards(cards: Card[]) {
   }
 }
 
-export function renderCards(app: PIXI.Application): Card[] {
+export function renderCards(app: PIXI.Application, onMove: () => void, onClick): Card[] {
   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-  const cards = createCards(cardTexture, app);
+  const cards = createCards(cardTexture, app, onMove, onClick);
   return cards;
 }
 
@@ -88,7 +88,19 @@ export function addCardInGameField(gameField: GameField, card: Card) {
   }
 }
 
-export function deal(cards: Card[], fields: GameField[], container, tl: GSAPTimeline) : void{
+export function getFields(): GameField[] {
+let arr = [];
+let x = 100;
+for (let i = 0; i < 7; i++) {
+    const initialField = new GameField(x, 400, 120, 150);
+    arr.push(initialField);
 
- 
+    //app.stage.addChild(initialField);
+    x += 250;
 }
+
+return arr;
+
+}
+
+

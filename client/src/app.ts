@@ -40,7 +40,7 @@
 
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { addCardInGameField, createSuitsImages, deal, renderCards } from "./utils/Factory";
+import { addCardInGameField, createSuitsImages,  getFields, renderCards } from "./utils/Factory";
 import { gsap, random } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { CARD_HEIGHT, CARD_WIDTH } from "./utils/constants";
@@ -60,9 +60,9 @@ document.body.appendChild(app.view as HTMLCanvasElement);
 
 
 // Dependency Injection ???
-let cards = renderCards(app);
+let cards = renderCards(app, onMove, onClick);
 const suites = createSuitsImages();
-const fields: GameField[] = [];
+let fields: GameField[] = [];
 //add container to position 100:100
 // const container = new Tank(100, 100, onClick.bind(null));
 const container = new Tank(100, 100);
@@ -112,7 +112,7 @@ init().then(start).then(
                 }
             }, '>');
 
-      //  card animation to initial fields
+        //  card animation to initial fields
 
         let index = 0;
         let positionIndex = 0;
@@ -132,17 +132,17 @@ init().then(start).then(
                         ease: "power2.inOut",
                         onComplete: () => {
                             f.addChild(card);
-                            //f.addCard(card)
-                            f.addCard(card);
+                            f.add(card);
                             container.remove(card);
                             card.position.x = 70;
                             card.position.y -= 320;
+                            card.onStart = false;
                             if (j == i) {
                                 // console.log(cardContainer
                                 //     )
                                 card.flip();
                                 card.isActive = true;
-
+                                
                             }
                         }
                     }, '>').then(() => tl.pause());
@@ -158,17 +158,8 @@ init().then(start).then(
 async function start() {
 
 
-    let x = 100;
-    for (let i = 0; i < 7; i++) {
-        let initialField = new GameField(x, 400, 120, 150);
-        fields.push(initialField);
-
-        app.stage.addChild(initialField);
-        x += 250;
-    }
-
-    app.stage.addChild(field, field1, field2, field3, container, flipContainer);
-
+    fields = getFields();
+    app.stage.addChild(field, field1, field2, field3, ...fields, container, flipContainer);
     // const cardsContainers = cards.map((card) => card.get);
     cards.forEach(c => {
         container.add(c);
@@ -183,26 +174,19 @@ async function start() {
 function onClick() {
 
     const current = container.cards[container.cards.length - 1];
-    container.remove(current)
+    container.remove(current);
+    current.onStart = false;
     flipContainer.add(current);
+
 }
 
 function onMove() {
-    console.log('pointertap')
-    let currentCard = flipContainer.cards[flipContainer.cards.length - 1];
-    for (let i = 0; i < 7; i++) {
-        let field = fields[i];
-        //field.removeCard()
-        const cardOnField = field.getLastCard()
-        console.log(field.getLastCard().color);
-        console.log(currentCard.power, cardOnField.power);
-        if (currentCard.power + 1 == cardOnField.power
-            && currentCard.color != cardOnField.color) {
-            flipContainer.remove(currentCard);
-            field.addChild(currentCard);
-            field.addCard(currentCard);
-            currentCard.setPosition(field.getLastCard().x - CARD_WIDTH / 2, field.getLastCard().y + CARD_HEIGHT / 2)
-        }
+    console.log('pointertap');
+
+    for(let i = 0 ; i < fields.length; i++){
+
     }
+
+
 }
 
