@@ -58,7 +58,7 @@ export class Card extends PIXI.Container {
 
   }
 
-  get sprite() {
+  get sprite(): PIXI.Sprite {
     return this._sprite;
   }
   get color() {
@@ -110,7 +110,9 @@ export class Card extends PIXI.Container {
     this.isActive = true;
   }
 
-
+  get get() {
+    return this._container;
+  }
   // get get() {
   //   return this._container;
   // }
@@ -120,23 +122,19 @@ export class Card extends PIXI.Container {
   }
 
   addMask(sprite: PIXI.Sprite) {
-
     const rect = new PIXI.Graphics();
     rect.beginFill(0xfffff);
     rect.drawRoundedRect(this._sprite.x, this._sprite.y, 180, 180, 10);
     rect.endFill();
-
     //rect.position.set(this._sprite.x, this._sprite.y);
     sprite.mask = rect;
     sprite.addChild(rect);
   }
 
-
   onDragStart(e) {
 
     this.data = e.data;
     this._dragging = true;
-
   }
   onDragEnd(e) {
 
@@ -186,7 +184,6 @@ export class Card extends PIXI.Container {
 
 
   onClick(e) {
-
     if (!this.isActive) {
       this.flip();
       if (this.onStart) {

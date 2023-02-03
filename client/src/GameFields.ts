@@ -16,8 +16,10 @@ export class GameField extends PIXI.Container {
   private _border: PIXI.Graphics;
   private _position: { x: number; y: number };
   private _image: PIXI.Sprite;
-  data
-  _dragging = false
+
+  private _imageContainer: PIXI.Container;
+  private data = null;
+  private _dragging = false;
   constructor(
     x: number,
     y: number,
@@ -37,12 +39,15 @@ export class GameField extends PIXI.Container {
       this.createField();
 
 
+
+      this._imageContainer = new PIXI.Container();
+      this.addChild(this._imageContainer);
+      //this.on("pointerdown", () => {console.log("click")})
   }
 
   get suite() {
     return this._suite;
   }
-
 
   getCards() {
     return this.cards;
@@ -59,13 +64,13 @@ export class GameField extends PIXI.Container {
   createField() {
     this.setBorder();
     const sprite = new PIXI.Sprite();
-
     if (this._image !== undefined) {
       this.setFieldBackground(this._image);
       this._image.anchor.set(0.5);
       this._image.position.set(70, 95);
       this.addMask(this._image);
       sprite.addChild(this._image);
+      //sprite.zIndex = -1;
     } else {
       this.setBackground(sprite);
     }
@@ -102,12 +107,24 @@ export class GameField extends PIXI.Container {
     sprite.addChild(rect);
   }
 
+  renderCards() {
+    this.cards.forEach((card) => {
+      const spriteCard = new PIXI.Sprite(card.sprite.texture);
+      spriteCard.width = 160;
+      spriteCard.height = 200;
+      this._imageContainer.addChild(spriteCard);
+    });
+  }
+
   addCard(card: Card) {
-    if (!this.cards.some((c) => c.name == card.name)) {
+    if (this.cards.length == 0 && card.name.concat("A")) {
       this.cards.push(card);
-      return true;
+    } else {
+      if (!this.cards.some((c) => c.name == card.name && c.power > card.power)) {
+        this.cards.push(card);
+      }
     }
-    return false;
+    this.renderCards();
   }
 
   removeCard(card: Card) {
@@ -125,3 +142,5 @@ export class GameField extends PIXI.Container {
   }
 
 }
+
+

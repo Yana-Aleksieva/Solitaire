@@ -31,7 +31,7 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
       // rect.endFill();
 
       // spriteCard.mask = rect;
-      // container.addChild(spriteCard, rect);
+      //container.addChild(spriteCard);
 
       // Add card name
       const card = new Card(cardNames[i][j], power, spriteCard, suite, onMove, onClick, app);
