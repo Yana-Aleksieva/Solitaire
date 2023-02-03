@@ -2,11 +2,10 @@ import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { CARD_HEIGHT, CARD_WIDTH } from "./utils/constants";
-import { addCardInGameField, moveCardFromMainDeckToFlipDeck } from "./utils/Factory";
+import { addCardInGameField, getFields } from "./utils/Factory";
 import { field, field1, field2, field3 } from "./utils/gameField";
 import { SuitCard } from "./utils/types";
 import { Tank } from "./Tank";
-
 
 console.log([field, field1, field2, field3]);
 
@@ -18,10 +17,13 @@ export class Card extends PIXI.Container {
   private _container: PIXI.Container;
   _color: SuitCard;
   _power: number;
-  data
+  data;
+  onStart: boolean = true;
   private _dragging: boolean;
   private _position: { x: number; y: number };
-  private _back: PIXI.Sprite = new PIXI.Sprite(new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png")));
+  private _back: PIXI.Sprite = new PIXI.Sprite(
+    new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
+  );
   isActive: boolean = false;
   private _sprite: PIXI.Sprite;
   private _suite: string;
@@ -33,17 +35,17 @@ export class Card extends PIXI.Container {
     power: number,
     sprite: PIXI.Sprite,
     public suite: string,
-    public app: PIXI.Application,
-    cardContainer: Tank,
+    private callback: () => void,
+    private callback1: () => void,
+    public app: PIXI.Application
   ) {
     super();
-    this.interactive = true
+    this.interactive = true;
     this._name = name;
     this._power = power;
     //this._suite = suite;
     this._container = new PIXI.Container();
     this.flipContainer = new Tank(300, 100);
-    this._cardContainer = cardContainer;
     this.position.set(100, 100);
     this.pivot.set(CARD_WIDTH / 2);
     this._dragging = false;
@@ -51,11 +53,9 @@ export class Card extends PIXI.Container {
     this._sprite.renderable = false;
     this.addChild(this._back, this._sprite);
     this._back.scale.set(0.38);
-
     this._container.interactive = true;
     this._container.addChild(this);
 
-    this.app.stage.addChild(this.flipContainer);
     // this._container.on("pointerdown", (e) => {
     //   this._dragging = true;
     //   //this.setPosition(e.globalX, e.globalY);
@@ -106,10 +106,10 @@ export class Card extends PIXI.Container {
 
     this.interactive = true;
 
-    this.on('pointertap', this.onClick);
-    this.on('mousedown', this.onDragStart)
-    this.on('mouseup', this.onDragEnd)
-    this.on('mousemove', this.onDragMove);
+    this.on("pointertap", this.onClick.bind(this));
+    this.on("mousedown", this.onDragStart.bind(this));
+    this.on("mouseup", this.onDragEnd.bind(this));
+    this.on("mousemove", this.onDragMove.bind(this));
   }
 
   get sprite(): PIXI.Sprite {
@@ -117,15 +117,13 @@ export class Card extends PIXI.Container {
   }
   get color() {
     let suite = this.suite.substring(0);
-    if (suite == 'H' || suite == 'D') {
-      return 'Red';
+    if (suite == "H" || suite == "D") {
+      return "Red";
     } else {
-      return 'Black';
+      return "Black";
     }
-
   }
   set sprite(value: PIXI.Sprite) {
-
     this._sprite = value;
     this.addMask(this._sprite);
 
@@ -135,8 +133,6 @@ export class Card extends PIXI.Container {
   get name() {
     return this._name;
   }
-
-
 
   getNextCard() {
     if (!this._dragging) {
@@ -186,20 +182,13 @@ export class Card extends PIXI.Container {
   }
 
   onDragStart(e) {
-    // store a reference to the data
-    // the reason for this is because of multitouch
-    // we want to track the movement of this particular touch
     this.data = e.data;
     this._dragging = true;
   }
   onDragEnd(e) {
-    // this.alpha = 1;
-    // set the interaction data to null
-    this.data = null;
-    //this.position.set(e.globalX, e.globalY);
-
     this._dragging = false;
-    //this.removeEventListener('on')
+    //  this.callback();
+    //this.position.set(e.globalX, e.globalY)
   }
 
   onDragMove(e) {
@@ -211,10 +200,10 @@ export class Card extends PIXI.Container {
 
       this.position.x = e.globalX;
       this.position.y = e.globalY;
-      console.log(this.position.x)
+      console.log(this.position.x);
       if (this.position.x == 930) {
         const isAdded = addCardInGameField(field, this);
-        if (isAdded){
+        if (isAdded) {
           this.setPosition(-100, -50);
           this.app.stage.removeChild(this);
         }
@@ -236,49 +225,54 @@ export class Card extends PIXI.Container {
           this.setPosition(-100, -50);
           this.app.stage.removeChild(this);
         }
+        if (this._dragging) {
+          if (this.parent) {
+            this.parent.removeChild(this);
+            this.position.x = e.globalX;
+            this.position.y = e.globalY;
+            this.app.stage.addChild(this);
+            // this.callback();
+          } else {
+          }
+          //  this.pivot.set(200)
+          // const index = this.cards.indexOf(e.target);
+          //const cardsArr = this.cards.slice(index);
+          // console.log(cardsArr);
+          // let container = new Container();
+          // console.log(this._dragging);
+          //console.log(e.target.position);
+          // gsap.to(this, {
+          //   duration: 0.5,
+          //   overwrite: true,
+          //   x: e.globalX,
+          //   y: e.globalY,
+          //   //stagger: 0.15,
+          //   ease: "none"
+          // });
+          // cardsArr.forEach(c => {
+          // c.pivot.set(200, 200);
+          //c.position.set(e.globalX, e.globalY)
+          // })
+          // cardsArr[0].position.x = e.globalX;
+          // cardsArr[0].position.y = e.globalX;
+          // this.position.set (e.globalX, e.globalY)
+        }
       }
-
-      
-
-      //  this.pivot.set(200)
-      // const index = this.cards.indexOf(e.target);
-      //const cardsArr = this.cards.slice(index);
-      // console.log(cardsArr);
-      // let container = new Container();
-      // console.log(this._dragging);
-      //console.log(e.target.position);
-      // gsap.to(this, {
-      //   duration: 0.5,
-      //   overwrite: true,
-      //   x: e.globalX,
-      //   y: e.globalY,
-      //   //stagger: 0.15,
-      //   ease: "none"
-      // });
-      // cardsArr.forEach(c => {
-      // c.pivot.set(200, 200);
-      //c.position.set(e.globalX, e.globalY)
-      // })
-      // cardsArr[0].position.x = e.globalX;
-      // cardsArr[0].position.y = e.globalX;
-      // this.position.set (e.globalX, e.globalY)
     }
   }
 
   onClick(e) {
-    console.log(this._cardContainer.cards.length);
-    //const index = this.getChildIndex(this);
-      const current = this._cardContainer.cards[this._cardContainer.cards.length - 1];
-      this._cardContainer.removeChild(this);
-      const tempContainer = new PIXI.Container();
-      tempContainer.addChild(current);
-      this.flipContainer.addChild(tempContainer);
-      this.flip();
+    console.log(this);
     if (!this.isActive) {
-     
-      //moveCardFromMainDeckToFlipDeck(this, this.flipContainer);
-      //this.app.stage.removeChild(this);
-      //this.position.set(300, 100)
+      this.flip();
+      if (this.onStart) {
+        this.callback1();
+        //this.sendCard(e)
+      } else {
+      }
+    } else {
+      this.callback();
     }
   }
+  sendCard(e) {}
 }

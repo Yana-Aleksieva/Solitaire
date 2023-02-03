@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import { Card } from "./Card";
-import { createSuitsImages } from "./utils/Factory";
+//import { createSuitsImages } from "./utils/Factory";
 import gsap from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { Container } from "pixi.js";
@@ -38,9 +38,14 @@ export class GameField extends PIXI.Container {
       (this.position.y = y),
       this.createField();
 
+
     this._imageContainer = new PIXI.Container();
     this.addChild(this._imageContainer);
     //this.on("pointerdown", () => {console.log("click")})
+
+      this._imageContainer = new PIXI.Container();
+      this.addChild(this._imageContainer);
+      //this.on("pointerdown", () => {console.log("click")})
   }
 
   get suite() {
@@ -91,6 +96,8 @@ export class GameField extends PIXI.Container {
     tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(() =>
       tl.pause()
     );
+
+    tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(() => tl.pause());
   }
 
   addMask(sprite: PIXI.Sprite) {
@@ -137,4 +144,10 @@ export class GameField extends PIXI.Container {
   getLastCard() {
     return this.cards[this.cards.length - 1];
   }
+
+  add(card: Card) {
+    this.cards.push(card);
+  }
 }
+
+
