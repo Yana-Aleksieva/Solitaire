@@ -21,6 +21,7 @@ export class GameField extends PIXI.Container {
   private data = null;
   private _dragging = false;
   constructor(
+    public id: number,
     x: number,
     y: number,
     width: number,

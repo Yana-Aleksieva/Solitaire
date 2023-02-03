@@ -6,8 +6,7 @@ import { addCardInGameField, getFields } from "./utils/Factory";
 import { field, field1, field2, field3 } from "./utils/gameField";
 import { SuitCard } from "./utils/types";
 import { Tank } from "./Tank";
-
-console.log([field, field1, field2, field3]);
+import { GameField } from "./GameFields";
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -29,13 +28,13 @@ export class Card extends PIXI.Container {
   private _suite: string;
   private flipContainer: Tank;
   private _cardContainer: Tank;
+  public fields: GameField[];
 
   constructor(
     name: string,
     power: number,
     sprite: PIXI.Sprite,
     public suite: string,
-    private callback: () => void,
     private callback1: () => void,
     public app: PIXI.Application
   ) {
@@ -44,6 +43,7 @@ export class Card extends PIXI.Container {
     this._name = name;
     this._power = power;
     //this._suite = suite;
+    this.fields = [];
     this._container = new PIXI.Container();
     this.flipContainer = new Tank(300, 100);
     this.position.set(100, 100);
@@ -55,7 +55,7 @@ export class Card extends PIXI.Container {
     this._back.scale.set(0.38);
     this._container.interactive = true;
     this._container.addChild(this);
-
+    
     // this._container.on("pointerdown", (e) => {
     //   this._dragging = true;
     //   //this.setPosition(e.globalX, e.globalY);
@@ -110,6 +110,26 @@ export class Card extends PIXI.Container {
     this.on("mousedown", this.onDragStart.bind(this));
     this.on("mouseup", this.onDragEnd.bind(this));
     this.on("mousemove", this.onDragMove.bind(this));
+  }
+
+  getCurrentField(x: number, y: number): GameField | null {
+    console.log(this.fields);
+    if (x >= 77 && x <= 260 && y >= 400 && y <= 750) {
+      return this.fields[0];
+    } else if (x >= 330 && y >= 400 && y <= 750) {
+      return this.fields[1];
+    } else if (x >= 580 && y >= 400 && y <= 750) {
+      return this.fields[2];
+    } else if (x >= 830 && y >= 400 && y <= 750) {
+      return this.fields[3];
+    } else if (x >= 1080 && y >= 400 && y <= 750) {
+      return this.fields[4];
+    } else if (x >= 1300 && y >= 400 && y <= 750) {
+      return this.fields[5];
+    } else if (x >= 1585 && y >= 400 && y <= 750) {
+      return this.fields[6];
+    }
+    return null;
   }
 
   get sprite(): PIXI.Sprite {
@@ -186,9 +206,25 @@ export class Card extends PIXI.Container {
     this._dragging = true;
   }
   onDragEnd(e) {
+    
     this._dragging = false;
     //  this.callback();
     //this.position.set(e.globalX, e.globalY)
+    // Bottom game fields
+    const addCardToGameField = (e) => {
+      console.log(e.clientY);
+      const currentField = this.getCurrentField(e.clientX, e.clientY);
+      // const field = this.fields.find((f) => f.id == currentField.id);
+      // console.log(!!currentField);
+      if (currentField) {
+        console.log("if")
+        currentField.add(this);
+        const cards = currentField.getCards();
+        console.log(field.getCards());
+        document.body.removeEventListener("mousemove", addCardToGameField);
+      }
+    }
+    document.body.addEventListener("mousemove", addCardToGameField)
   }
 
   onDragMove(e) {
@@ -200,7 +236,7 @@ export class Card extends PIXI.Container {
 
       this.position.x = e.globalX;
       this.position.y = e.globalY;
-      console.log(this.position.x);
+      //console.log(this.position.x);
       if (this.position.x == 930) {
         const isAdded = addCardInGameField(field, this);
         if (isAdded) {
@@ -271,7 +307,7 @@ export class Card extends PIXI.Container {
       } else {
       }
     } else {
-      this.callback();
+      //this.callback();
     }
   }
   sendCard(e) {}

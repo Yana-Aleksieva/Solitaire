@@ -7,7 +7,6 @@ import { Tank } from "../Tank";
 export function createCards(
   baseTexture: PIXI.BaseTexture,
   app: PIXI.Application,
-  onMove,
   onClick
 ) {
   const cards: Card[] = [];
@@ -49,7 +48,6 @@ export function createCards(
         power,
         spriteCard,
         suite,
-        onMove,
         onClick,
         app
       );
@@ -80,11 +78,10 @@ function shuffleCards(cards: Card[]) {
 
 export function renderCards(
   app: PIXI.Application,
-  onMove: () => void,
   onClick
 ): Card[] {
   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-  const cards = createCards(cardTexture, app, onMove, onClick);
+  const cards = createCards(cardTexture, app, onClick);
   return cards;
 }
 
@@ -143,8 +140,9 @@ export function moveCardFromMainDeckToFlipDeck(
 export function getFields(): GameField[] {
   let arr = [];
   let x = 100;
+  let fieldId = 5;
   for (let i = 0; i < 7; i++) {
-    const initialField = new GameField(x, 400, 120, 150);
+    const initialField = new GameField(fieldId++, x, 400, 120, 150);
     arr.push(initialField);
 
     //app.stage.addChild(initialField);
