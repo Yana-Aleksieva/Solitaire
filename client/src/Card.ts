@@ -2,9 +2,10 @@ import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { CARD_HEIGHT, CARD_WIDTH } from "./utils/constants";
-import { addCardInGameField } from "./utils/Factory";
+import { addCardInGameField, moveCardFromMainDeckToFlipDeck } from "./utils/Factory";
 import { field, field1, field2, field3 } from "./utils/gameField";
 import { SuitCard } from "./utils/types";
+import { Tank } from "./Tank";
 
 
 console.log([field, field1, field2, field3]);
@@ -24,14 +25,16 @@ export class Card extends PIXI.Container {
   isActive: boolean = false;
   private _sprite: PIXI.Sprite;
   private _suite: string;
+  private flipContainer: Tank;
+  private _cardContainer: Tank;
 
   constructor(
     name: string,
     power: number,
-
     sprite: PIXI.Sprite,
     public suite: string,
-    public app: PIXI.Application
+    public app: PIXI.Application,
+    cardContainer: Tank,
   ) {
     super();
     this.interactive = true
@@ -39,6 +42,8 @@ export class Card extends PIXI.Container {
     this._power = power;
     //this._suite = suite;
     this._container = new PIXI.Container();
+    this.flipContainer = new Tank(300, 100);
+    this._cardContainer = cardContainer;
     this.position.set(100, 100);
     this.pivot.set(CARD_WIDTH / 2);
     this._dragging = false;
@@ -50,54 +55,54 @@ export class Card extends PIXI.Container {
     this._container.interactive = true;
     this._container.addChild(this);
 
+    this.app.stage.addChild(this.flipContainer);
+    // this._container.on("pointerdown", (e) => {
+    //   this._dragging = true;
+    //   //this.setPosition(e.globalX, e.globalY);
 
-    this._container.on("pointerdown", (e) => {
-      this._dragging = true;
-      //this.setPosition(e.globalX, e.globalY);
+    // });
+    // this._container.on("mousemove", (e) => {
+    //   // 930
+    //   // 1180
+    //   // 1430
+    //   // 1680
+    //   if (this._dragging) {
+    //     this.setPosition(e.globalX, e.globalY);
+    //     this._position = { x: e.globalX, y: e.globalY }
 
-    });
-    this._container.on("mousemove", (e) => {
-      // 930
-      // 1180
-      // 1430
-      // 1680
-      if (this._dragging) {
-        this.setPosition(e.globalX, e.globalY);
-        this._position = { x: e.globalX, y: e.globalY }
+    //     console.log(e.globalX)
+    //     if (e.globalX == 930) {
+    //       addCardInGameField(field, this);
+    //       this.setPosition(-100, -100);
+    //     } else if (e.globalX == 1180) {
+    //       addCardInGameField(field1, this);
+    //       this.setPosition(-100, -100);
+    //     } else if (e.globalX == 1430) {
+    //       addCardInGameField(field2, this);
+    //       this.setPosition(-100, -100);
+    //     } else if (e.globalX == 1680) {
+    //       addCardInGameField(field3, this);
+    //       this.setPosition(-100, -100);
+    //     }
+    //   }
+    // });
 
-        console.log(e.globalX)
-        if (e.globalX == 930) {
-          addCardInGameField(field, this);
-          this.setPosition(-100, -100);
-        } else if (e.globalX == 1180) {
-          addCardInGameField(field1, this);
-          this.setPosition(-100, -100);
-        } else if (e.globalX == 1430) {
-          addCardInGameField(field2, this);
-          this.setPosition(-100, -100);
-        } else if (e.globalX == 1680) {
-          addCardInGameField(field3, this);
-          this.setPosition(-100, -100);
-        }
-      }
-    });
+    // this._container.on("pointerup", (e) => {
+    //   this._dragging = false;
+    //   this.setPosition(e.globalX, e.globalY);
+    // });
 
-    this._container.on("pointerup", (e) => {
-      this._dragging = false;
-      this.setPosition(e.globalX, e.globalY);
-    });
+    // if (!this._dragging && !this.isActive) {
+    //   const nextCardCallback = () => {
+    //     this.getNextCard();
+    //     this.isActive = true;
+    //     this._sprite.renderable = true;
+    //     this._back.renderable = false;
 
-    if (!this._dragging && !this.isActive) {
-      const nextCardCallback = () => {
-        this.getNextCard();
-        this.isActive = true;
-        this._sprite.renderable = true;
-        this._back.renderable = false;
-
-        this._container.removeEventListener("pointertap", nextCardCallback);
-      };
-      this._container.on("pointertap", nextCardCallback);
-    }
+    //     this._container.removeEventListener("pointertap", nextCardCallback);
+    //   };
+    //   this._container.on("pointertap", nextCardCallback);
+    // }
 
     this.interactive = true;
 
@@ -198,17 +203,42 @@ export class Card extends PIXI.Container {
   }
 
   onDragMove(e) {
-    if (this._dragging) {
+    if (this._dragging && this.parent) {
       // console.log('clicked');
-      if (this.parent) {
-        console.log(this.parent);
-        this.parent.removeChild(this);
-        this.position.x = e.globalX;
-        this.position.y = e.globalY;
-        this.app.stage.addChild(this)
-      } else {
+      //console.log(this.parent);
+      this.parent.removeChild(this);
+      this.app.stage.addChild(this);
 
+      this.position.x = e.globalX;
+      this.position.y = e.globalY;
+      console.log(this.position.x)
+      if (this.position.x == 930) {
+        const isAdded = addCardInGameField(field, this);
+        if (isAdded){
+          this.setPosition(-100, -50);
+          this.app.stage.removeChild(this);
+        }
+      } else if (this.position.x == 1180) {
+        const isAdded = addCardInGameField(field1, this);
+        if (isAdded) {
+          this.setPosition(-100, -50);
+          this.app.stage.removeChild(this);
+        }
+      } else if (this.position.x == 1420) {
+        const isAdded = addCardInGameField(field2, this);
+        if (isAdded) {
+          this.setPosition(-100, -50);
+          this.app.stage.removeChild(this);
+        }
+      } else if (this.position.x == 1670) {
+        const isAdded = addCardInGameField(field3, this);
+        if (isAdded) {
+          this.setPosition(-100, -50);
+          this.app.stage.removeChild(this);
+        }
       }
+
+      
 
       //  this.pivot.set(200)
       // const index = this.cards.indexOf(e.target);
@@ -235,11 +265,20 @@ export class Card extends PIXI.Container {
     }
   }
 
-
   onClick(e) {
-    if (!this.isActive) {
+    console.log(this._cardContainer.cards.length);
+    //const index = this.getChildIndex(this);
+      const current = this._cardContainer.cards[this._cardContainer.cards.length - 1];
+      this._cardContainer.removeChild(this);
+      const tempContainer = new PIXI.Container();
+      tempContainer.addChild(current);
+      this.flipContainer.addChild(tempContainer);
       this.flip();
-      this.position.set(200, 100)
+    if (!this.isActive) {
+     
+      //moveCardFromMainDeckToFlipDeck(this, this.flipContainer);
+      //this.app.stage.removeChild(this);
+      //this.position.set(300, 100)
     }
   }
 }

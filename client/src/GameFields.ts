@@ -38,9 +38,9 @@ export class GameField extends PIXI.Container {
       (this.position.y = y),
       this.createField();
 
-      this._imageContainer = new PIXI.Container();
-      this.addChild(this._imageContainer);
-      //this.on("pointerdown", () => {console.log("click")})
+    this._imageContainer = new PIXI.Container();
+    this.addChild(this._imageContainer);
+    //this.on("pointerdown", () => {console.log("click")})
   }
 
   get suite() {
@@ -76,8 +76,6 @@ export class GameField extends PIXI.Container {
     this.addChild(sprite);
   }
 
-
-
   setBackground(parent: PIXI.Sprite) {
     const rect = new PIXI.Graphics();
     rect.beginFill(0x588c27);
@@ -90,7 +88,9 @@ export class GameField extends PIXI.Container {
 
   setFieldBackground(image: PIXI.Graphics | PIXI.Sprite) {
     const tl = gsap.timeline();
-    tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(()=>tl.pause());
+    tl.set(image, { pixi: { tint: 0x427c0c, alpha: 0.4 } }).then(() =>
+      tl.pause()
+    );
   }
 
   addMask(sprite: PIXI.Sprite) {
@@ -115,14 +115,16 @@ export class GameField extends PIXI.Container {
   }
 
   addCard(card: Card) {
-    if (this.cards.length == 0 && card.name.concat("A")) {
+    if (this.cards.length == 0 && card.name.includes("A")) {
       this.cards.push(card);
-    } else {
-      if (!this.cards.some((c) => c.name == card.name && c.power > card.power)) {
-        this.cards.push(card);
-      }
+      this.renderCards();
     }
-    this.renderCards();
+
+    const lastCard = this.cards[this.cards.length - 1];
+    if (!this.cards.some((c) => c.name == card.name && card.power > c.power)) {
+      this.cards.push(card);
+      this.renderCards();
+    }
   }
 
   removeCard(card: Card) {
@@ -134,5 +136,5 @@ export class GameField extends PIXI.Container {
 
   getLastCard() {
     return this.cards[this.cards.length - 1];
-  } 
+  }
 }

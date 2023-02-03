@@ -2,8 +2,9 @@ import * as PIXI from "pixi.js";
 import { Card } from "../Card";
 import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
 import { GameField } from "../GameFields";
+import { Tank } from "../Tank";
 
-export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application) {
+export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application, cardContainer: Tank) {
   const cards: Card[] = [];
   let y = 850;
 
@@ -34,7 +35,7 @@ export function createCards(baseTexture: PIXI.BaseTexture, app: PIXI.Application
       //container.addChild(spriteCard);
 
       // Add card name
-      const card = new Card(cardNames[i][j], power, spriteCard, suite, app);
+      const card = new Card(cardNames[i][j], power, spriteCard, suite, app, cardContainer);
       cards.push(card);
       x += 458;
       power++;
@@ -55,9 +56,9 @@ function shuffleCards(cards: Card[]) {
   }
 }
 
-export function renderCards(app: PIXI.Application): Card[] {
+export function renderCards(app: PIXI.Application, cardContainer: Tank): Card[] {
   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-  const cards = createCards(cardTexture, app);
+  const cards = createCards(cardTexture, app, cardContainer);
   return cards;
 }
 
@@ -80,12 +81,28 @@ export function createSuitsImages() {
 }
 
 export function addCardInGameField(gameField: GameField, card: Card) {
-  if (gameField.suite == card.suite) {
+  const cards = gameField.getCards();
+  
+  if (cards.length == 0) {
+    if (!card.name.includes("A")) {
+      return false;
+    }
+    gameField.addCard(card);
+    return true;
+  }
+
+  const lastCard = cards[cards.length - 1];
+  if (lastCard.power < card.power && gameField.suite == card.suite) {
     gameField.addCard(card);
     console.log(gameField.getCards())
   } else {
-    console.log(`Gamefield suite: ${gameField.suite}, card suite: ${card.suite}`)
+   return false;
   }
+  return true;
+}
+
+export function moveCardFromMainDeckToFlipDeck(card: Card, flipContainer: Tank) {
+  flipContainer.addChild(card);
 }
 
 export function deal(cards: Card[], fields: GameField[], container, tl: GSAPTimeline) : void{
