@@ -1,14 +1,14 @@
 import * as PIXI from "pixi.js";
 import { Card } from "../Card";
-import { CARD_HEIGHT, CARD_WIDTH, cardNames, WINDOW_HEIGHT, WINDOW_WIDTH } from "./constants";
+import { CARD_HEIGHT, CARD_WIDTH, cardNames, names, WINDOW_HEIGHT, WINDOW_WIDTH } from "./constants";
 import { GameField } from "../GameFields";
 import { Tank } from "../Tank";
 
 export function createCards(
-  baseTexture: PIXI.BaseTexture,
   app: PIXI.Application,
   onClick
-) {
+): Card[] {
+  const baseTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
   const cards: Card[] = [];
   let y = 850;
   let suites = ["clubs", "hearts", "spades", "diamonds"];
@@ -30,10 +30,8 @@ export function createCards(
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
 
-
-
       const card = new Card(
-        cardNames[i][j],
+        j + 1,
         power,
         spriteCard,
         suite,
@@ -61,17 +59,6 @@ function shuffleCards(cards: Card[]) {
   }
 }
 
-
-
-export function renderCards(
-  app: PIXI.Application,
-  onClick
-): Card[] {
-  const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-  const cards = createCards(cardTexture, app, onClick);
-  return cards;
-}
-
 export function createSuitsImages() {
   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
   const suite: PIXI.Sprite[] = [];
@@ -93,7 +80,7 @@ export function addCardInGameField(gameField: GameField, card: Card) {
   const cards = gameField.getCards();
 
   if (cards.length == 0) {
-    if (!card.name.includes("A")) {
+    if (card.face != 1) {
       return false;
     }
     if (gameField.suite == card.suite) {
@@ -129,15 +116,11 @@ export function getFields(data): GameField[] {
   let fieldId = 5;
   for (let i = 0; i < 7; i++) {
     const initialField = new GameField(fieldId++, x, offsetY, data[i].cards);
-
     arr.push(initialField);
-
     x += offsetX;
   }
-
   return arr;
 }
-
 
 export function fillPiles() {
 

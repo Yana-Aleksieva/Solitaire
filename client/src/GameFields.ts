@@ -16,7 +16,6 @@ export class GameField extends PIXI.Container {
   private _image: PIXI.Sprite;
   private _imageContainer: PIXI.Container;
 
-
   constructor(
     public id: number,
     x: number,
@@ -116,7 +115,7 @@ export class GameField extends PIXI.Container {
   }
 
   addCard(card: Card) {
-    if (this.cards.length == 0 && card.name.includes("A")) {
+    if (this.cards.length == 0 && card.face == 1) {
       this.cards.push(card);
       this.renderCards();
     }
