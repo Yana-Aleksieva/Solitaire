@@ -9,7 +9,7 @@ gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
 export class GameField extends PIXI.Container {
-  private cards: Card[] = [];
+  cards = [];
   private _suite: string;
   private _border: PIXI.Graphics;
   private _position: { x: number; y: number };
@@ -21,11 +21,12 @@ export class GameField extends PIXI.Container {
     public id: number,
     x: number,
     y: number,
+    piles: [],
     suite?: string,
     image?: PIXI.Sprite
   ) {
     super();
-    this.cards = [];
+    this.cards = piles;
     this._suite = suite;
     this._image = image;
 

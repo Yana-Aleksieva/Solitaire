@@ -24,7 +24,7 @@ export class Card extends PIXI.Container {
     new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
   );
   isActive: boolean = false;
-  private _sprite: PIXI.Sprite;
+  private face: PIXI.Sprite;
   private _suite: string;
   private _cardContainer: Tank;
   public fields: GameField[];
@@ -45,15 +45,15 @@ export class Card extends PIXI.Container {
     this._container = new PIXI.Container();
     this.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
     this._dragging = false;
-    this._sprite = sprite;
+    this.face = sprite;
 
 
     this.interactive = true;
-    this.addMask(this._sprite);
-    this.on("pointertap", this.onClick.bind(this));
-    this.on("mousedown", this.onDragStart.bind(this));
-    this.on("mouseup", this.onDragEnd.bind(this));
-    this.on("mousemove", this.onDragMove.bind(this));
+    this.addMask(this.face);
+    // this.on("pointertap", this.onClick.bind(this));
+    // this.on("mousedown", this.onDragStart.bind(this));
+    // this.on("mouseup", this.onDragEnd.bind(this));
+    // this.on("mousemove", this.onDragMove.bind(this));
   }
 
   getCurrentField(x: number, y: number): GameField | null {
@@ -77,7 +77,7 @@ export class Card extends PIXI.Container {
   }
 
   get sprite(): PIXI.Sprite {
-    return this._sprite;
+    return this.face;
   }
 
   get color() {
@@ -110,23 +110,23 @@ export class Card extends PIXI.Container {
       let tl = gsap.timeline();
 
 
-      tl.set(this._sprite.parent, { pixi: { skewY: -90 } });
+      tl.set(this.face.parent, { pixi: { skewY: -90 } });
 
       tl.to(this._back, {
         pixi: { skewY: 90 }, duration: 0.5,
         onStart: () => {
 
-          this._sprite.renderable = false;
+          this.face.renderable = false;
 
         },
         ease: 'power4.inOut'
 
       })
-      tl.to(this._sprite.parent, {
+      tl.to(this.face.parent, {
         pixi: { skewY: 0 }, duration: 0.2,
         onStart: () => {
 
-          this._sprite.renderable = true;
+          this.face.renderable = true;
           this._back.renderable = false;
 
         },
@@ -151,8 +151,8 @@ export class Card extends PIXI.Container {
 
   addMask(sprite: PIXI.Sprite) {
 
-    this._sprite.renderable = false;
-    this._sprite.anchor.set(0.5);
+    this.face.renderable = false;
+    this.face.anchor.set(0.5);
     this._back.anchor.set(0.5);
     this._back.width = CARD_WIDTH;
     this._back.height = CARD_HEIGHT;
@@ -164,8 +164,8 @@ export class Card extends PIXI.Container {
     rect.drawRoundedRect(0, 0, CARD_WIDTH, CARD_HEIGHT, 10);
     rect.endFill();
     rect.position.set(-CARD_WIDTH / 2, - CARD_HEIGHT / 2);
-    container.addChild(this._sprite, rect);
-    this._sprite.mask = rect;
+    container.addChild(this.face, rect);
+    this.face.mask = rect;
 
 
     this.addChild(container, this._back);

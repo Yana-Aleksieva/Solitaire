@@ -17,11 +17,15 @@ export class Player {
         });
     }
 
-    // Placeholders to be registered from outside
     onNewGame() {
+        // Placeholders to be registered from outside
     }
 
     setGameState(state) {
         this.connection.send('state', state);
+    }
+
+    setValidMoves(moves) {
+        this.connection.send('moves', moves);
     }
 }

@@ -11,7 +11,7 @@ export function createCards(
 ) {
   const cards: Card[] = [];
   let y = 850;
-  let suites = ["C", "H", "S", "D"];
+  let suites = ["clubs", "hearts", "spades", "diamonds"];
 
   for (let i = 0; i <= 3; i++) {
     let x = 50;
@@ -107,7 +107,7 @@ export function addCardInGameField(gameField: GameField, card: Card) {
   const lastCard = cards[cards.length - 1];
   if (lastCard.power == card.power - 1 && gameField.suite == card.suite) {
     gameField.addCard(card);
-    console.log(gameField.getCards());
+    //console.log(gameField.getCards());
   } else {
     return false;
   }
@@ -115,20 +115,20 @@ export function addCardInGameField(gameField: GameField, card: Card) {
 }
 
 export function moveCardFromMainDeckToFlipDeck(
-  card: Card,
+  card,
   flipContainer: Tank
 ) {
   flipContainer.addChild(card);
 }
 
-export function getFields(): GameField[] {
+export function getFields(data): GameField[] {
   let arr = [];
   const offsetX = WINDOW_WIDTH / 7;
   const offsetY = WINDOW_HEIGHT / 2.5;
   let x = 50;
   let fieldId = 5;
   for (let i = 0; i < 7; i++) {
-    const initialField = new GameField(fieldId++, x, offsetY);
+    const initialField = new GameField(fieldId++, x, offsetY, data[i].cards);
 
     arr.push(initialField);
 
@@ -138,4 +138,8 @@ export function getFields(): GameField[] {
   return arr;
 }
 
+
+export function fillPiles() {
+
+}
 

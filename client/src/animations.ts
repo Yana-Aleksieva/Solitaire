@@ -90,3 +90,7 @@ export function shuffleCards(cards: Card[]) {
         }).then(() => tl.kill());
 
 }
+
+export function addTime(){
+    
+}

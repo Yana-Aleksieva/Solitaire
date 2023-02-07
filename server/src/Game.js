@@ -1,14 +1,12 @@
+import { createState, dealDeckToState } from './cardFactory.js';
+import { Deck } from './cards.js';
 import { Player } from './Player.js';
 
-
-const states = {
-
-};
 
 export class Game {
     /** @type {Player} */
     player = null;
-    state = {};
+    state = null;
 
     /**
      * 
@@ -19,12 +17,30 @@ export class Game {
 
         this.player.onNewGame = this.newGame.bind(this);
         
-        this.newGame();
+        // if game is ongoing, send current state, else make a new state
+        if (this.state == null) {
+            this.newGame();
+        }
+        this.player.setGameState(this.state);
+        this.player.setValidMoves(this.calcMoves());
     }
 
     newGame() {
-        // TODO: initialize decks
-        console.log('new game');
-        this.player.setGameState(this.state);
+        const deck = new Deck();
+        deck.shuffle();
+        deck.shuffle();
+        deck.shuffle();
+        deck.shuffle();
+        deck.shuffle();
+        this.state = createState();
+        dealDeckToState(deck, this.state);
+    }
+
+    calcMoves() {
+        const moves = [];
+
+        
+
+        return moves;
     }
 }

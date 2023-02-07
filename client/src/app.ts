@@ -2,14 +2,13 @@ import { Connection } from "./websocket/Connection";
 import { engine } from "./websocket/engine";
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { renderCards, addCardInGameField, createSuitsImages, getFields } from "./utils/Factory";
-import { gsap, random, shuffle } from "gsap";
+import { renderCards, addCardInGameField, createSuitsImages, getFields, fillPiles } from "./utils/Factory";
 import { field, field1, field2, field3 } from "./utils/gameField";
 import { Tank } from "./Tank";
-import { Card } from "./Card";
 import { TextArea } from "./utils/TextArea";
 import { WINDOW_HEIGHT, WINDOW_WIDTH } from "./utils/constants";
 import { dealCards, shuffleCards } from "./animations";
+import { State } from "pixi.js";
 
 
 const initForm = document.querySelector('form');
@@ -26,8 +25,8 @@ initForm.addEventListener('submit', async event => {
     await connection.open();
     engine(connection);
     showBoard();
-
     connection.send('startGame');
+
 });
 
 document.getElementById('disconnect').addEventListener('click', () => {
@@ -38,7 +37,12 @@ document.getElementById('disconnect').addEventListener('click', () => {
 function showBoard() {
     initSection.style.display = 'none';
     //gameSection.style.display = 'block';
-    onStart();
+    connection.on('state', (data) => {
+
+        onStart(data);
+
+    })
+
 }
 
 function showInit() {
@@ -49,10 +53,6 @@ function showInit() {
 }
 
 
-
-
-
-
 // add canvas
 const app = new PIXI.Application({
     background: "0x006E33",
@@ -60,17 +60,18 @@ const app = new PIXI.Application({
     height: window.innerHeight,
 });
 
-function onStart() {
+function onStart(data) {
     document.body.appendChild(app.view as HTMLCanvasElement);
     // Dependency Injection ???
     const container = new Tank(100, 100);
     //let cards = renderCards(app, container);
 
     let cards = renderCards(app, onClick);
+    const piles = data.piles;
     const suites = createSuitsImages();
     let fields: GameField[] = [];
     const flipContainer = new Tank(300, 100);
-    const tl = gsap.timeline();
+    //console.log(piles)
 
     async function init() {
         await PIXI.Assets.load("/assets/sprite.jpg");
@@ -84,13 +85,14 @@ function onStart() {
 
 
     init().then(start)
-        .then(() => shuffleCards(cards))
-        .then(() => dealCards(cards, fields, app))
+    // .then(() => shuffleCards(cards))
+    //.then(() => dealCards(cards, fields, app))
 
 
     async function start() {
-        fields = getFields();
-        let score = new TextArea('Score: ');
+        fields = getFields(data.piles);
+        console.log(fields[3].cards);
+        let score = new TextArea('Score: 0');
         let time = new TextArea('Time: 0.0');
         app.stage.addChild(field, field1, field2, field3, ...fields, container, flipContainer, score, time);
         score.position.set(WINDOW_WIDTH - 300, 30);
@@ -100,11 +102,11 @@ function onStart() {
     }
 
     function onClick() {
-        const current = container.cards[container.cards.length - 1];
-        container.remove(current);
-        current.onStart = true;
-        flipContainer.add(current);
-        current._parent = flipContainer
+        // const current = container.cards[container.cards.length - 1];
+        // container.remove(current);
+        // current.onStart = true;
+        // flipContainer.add(current);
+        // current._parent = flipContainer
 
 
     }
@@ -114,3 +116,4 @@ function onStart() {
     }
 
 }
+
