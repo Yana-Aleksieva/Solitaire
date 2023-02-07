@@ -16,7 +16,7 @@ export class Card extends PIXI.Container {
   private _container: PIXI.Container;
   _color: SuitCard;
   _power: number;
-  data;
+  _parent: GameField | Tank;
   onStart: boolean = true;
   private _dragging: boolean;
   private _position: { x: number; y: number };
@@ -26,7 +26,6 @@ export class Card extends PIXI.Container {
   isActive: boolean = false;
   private _sprite: PIXI.Sprite;
   private _suite: string;
-  private flipContainer: Tank;
   private _cardContainer: Tank;
   public fields: GameField[];
 
@@ -42,70 +41,15 @@ export class Card extends PIXI.Container {
     this.interactive = true;
     this._name = name;
     this._power = power;
-    //this._suite = suite;
     this.fields = [];
     this._container = new PIXI.Container();
-    this.flipContainer = new Tank(300, 100);
-    this.position.set(100, 100);
-    this.pivot.set(CARD_WIDTH / 2);
+    this.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
     this._dragging = false;
     this._sprite = sprite;
-    this._sprite.renderable = false;
-    this.addChild(this._back, this._sprite);
-    this._back.scale.set(0.38);
-    this._container.interactive = true;
-    this._container.addChild(this);
-    
-    // this._container.on("pointerdown", (e) => {
-    //   this._dragging = true;
-    //   //this.setPosition(e.globalX, e.globalY);
 
-    // });
-    // this._container.on("mousemove", (e) => {
-    //   // 930
-    //   // 1180
-    //   // 1430
-    //   // 1680
-    //   if (this._dragging) {
-    //     this.setPosition(e.globalX, e.globalY);
-    //     this._position = { x: e.globalX, y: e.globalY }
-
-    //     console.log(e.globalX)
-    //     if (e.globalX == 930) {
-    //       addCardInGameField(field, this);
-    //       this.setPosition(-100, -100);
-    //     } else if (e.globalX == 1180) {
-    //       addCardInGameField(field1, this);
-    //       this.setPosition(-100, -100);
-    //     } else if (e.globalX == 1430) {
-    //       addCardInGameField(field2, this);
-    //       this.setPosition(-100, -100);
-    //     } else if (e.globalX == 1680) {
-    //       addCardInGameField(field3, this);
-    //       this.setPosition(-100, -100);
-    //     }
-    //   }
-    // });
-
-    // this._container.on("pointerup", (e) => {
-    //   this._dragging = false;
-    //   this.setPosition(e.globalX, e.globalY);
-    // });
-
-    // if (!this._dragging && !this.isActive) {
-    //   const nextCardCallback = () => {
-    //     this.getNextCard();
-    //     this.isActive = true;
-    //     this._sprite.renderable = true;
-    //     this._back.renderable = false;
-
-    //     this._container.removeEventListener("pointertap", nextCardCallback);
-    //   };
-    //   this._container.on("pointertap", nextCardCallback);
-    // }
 
     this.interactive = true;
-
+    this.addMask(this._sprite);
     this.on("pointertap", this.onClick.bind(this));
     this.on("mousedown", this.onDragStart.bind(this));
     this.on("mouseup", this.onDragEnd.bind(this));
@@ -113,7 +57,7 @@ export class Card extends PIXI.Container {
   }
 
   getCurrentField(x: number, y: number): GameField | null {
-    console.log(this.fields);
+
     if (x >= 77 && x <= 260 && y >= 400 && y <= 750) {
       return this.fields[0];
     } else if (x >= 330 && y >= 400 && y <= 750) {
@@ -135,6 +79,7 @@ export class Card extends PIXI.Container {
   get sprite(): PIXI.Sprite {
     return this._sprite;
   }
+
   get color() {
     let suite = this.suite.substring(0);
     if (suite == "H" || suite == "D") {
@@ -143,27 +88,12 @@ export class Card extends PIXI.Container {
       return "Black";
     }
   }
-  set sprite(value: PIXI.Sprite) {
-    this._sprite = value;
-    this.addMask(this._sprite);
 
-    this._sprite.renderable = false;
-  }
 
   get name() {
     return this._name;
   }
 
-  getNextCard() {
-    if (!this._dragging) {
-      gsap.to(this, {
-        pixi: { x: 300, y: 100, zIndex: 0 },
-        repeat: 0,
-        duration: 0.5,
-        overwrite: true,
-      });
-    }
-  }
 
   getPosition() {
     return this._position;
@@ -171,144 +101,184 @@ export class Card extends PIXI.Container {
 
   setPosition(x: number, y: number) {
     this.position.set(x, y);
-    console.log(this.name);
-  }
 
+  }
+  
   flip() {
-    this._back.renderable = false;
-    this._sprite.renderable = true;
-    this.isActive = true;
+
+    if (!this.isActive) {
+      let tl = gsap.timeline();
+
+
+      tl.set(this._sprite.parent, { pixi: { skewY: -90 } });
+
+      tl.to(this._back, {
+        pixi: { skewY: 90 }, duration: 0.5,
+        onStart: () => {
+
+          this._sprite.renderable = false;
+
+        },
+        ease: 'power4.inOut'
+
+      })
+      tl.to(this._sprite.parent, {
+        pixi: { skewY: 0 }, duration: 0.2,
+        onStart: () => {
+
+          this._sprite.renderable = true;
+          this._back.renderable = false;
+
+        },
+        onComplete: () => {
+          //this._back.renderable = false;
+          this.isActive = true;
+        },
+        ease: 'power4.inOut'
+
+      }, 0.5).then(() => tl.pause());
+    }
   }
 
   get get() {
     return this._container;
   }
-  // get get() {
-  //   return this._container;
-  // }
+
 
   get power() {
     return this._power;
   }
 
   addMask(sprite: PIXI.Sprite) {
+
+    this._sprite.renderable = false;
+    this._sprite.anchor.set(0.5);
+    this._back.anchor.set(0.5);
+    this._back.width = CARD_WIDTH;
+    this._back.height = CARD_HEIGHT;
+    const container = new PIXI.Container();
+
     const rect = new PIXI.Graphics();
+    // this._container.interactive = true;
     rect.beginFill(0xfffff);
-    rect.drawRoundedRect(this._sprite.x, this._sprite.y, 180, 180, 10);
+    rect.drawRoundedRect(0, 0, CARD_WIDTH, CARD_HEIGHT, 10);
     rect.endFill();
-    //rect.position.set(this._sprite.x, this._sprite.y);
-    sprite.mask = rect;
-    sprite.addChild(rect);
+    rect.position.set(-CARD_WIDTH / 2, - CARD_HEIGHT / 2);
+    container.addChild(this._sprite, rect);
+    this._sprite.mask = rect;
+
+
+    this.addChild(container, this._back);
   }
 
   onDragStart(e) {
-    this.data = e.data;
+
+
     this._dragging = true;
+
+    if (!this.onStart) {
+
+      const currentField = this.getCurrentField(e.globalX, e.globalY);
+      currentField.removeCard(this);
+    }
+
   }
   onDragEnd(e) {
-    
-    this._dragging = false;
-    //  this.callback();
-    //this.position.set(e.globalX, e.globalY)
-    // Bottom game fields
-    const addCardToGameField = (e) => {
-      console.log(e.clientY);
-      const currentField = this.getCurrentField(e.clientX, e.clientY);
-      // const field = this.fields.find((f) => f.id == currentField.id);
-      // console.log(!!currentField);
-      if (currentField) {
-        console.log("if")
-        currentField.add(this);
-        const cards = currentField.getCards();
-        console.log(field.getCards());
-        document.body.removeEventListener("mousemove", addCardToGameField);
-      }
-    }
-    document.body.addEventListener("mousemove", addCardToGameField)
+
+    // this._dragging = false;
+    // if (this.position.y < 300) {
+    //   if (this.position.x > 800 && this.position.x < 1000) {
+
+    //     const isAdded = addCardInGameField(field, this);
+    //     if (isAdded) {
+    //       this.setPosition(-100, -100);
+    //       this.app.stage.removeChild(this);
+    //       this._parent = field;
+    //     }
+    //   }
+
+    //   else if (this.position.x > 1000 && this.position.x < 1250) {
+
+    //     const isAdded = addCardInGameField(field1, this);
+    //     if (isAdded) {
+    //       this.setPosition(-100, -100);
+    //       this.app.stage.removeChild(this);
+    //       this._parent = field1;
+    //     }
+    //   } else if (this.position.x > 1250 && this.position.x < 1500) {
+
+    //     const isAdded = addCardInGameField(field2, this);
+    //     if (isAdded) {
+    //       this.setPosition(-100, -100);
+    //       this.app.stage.removeChild(this);
+    //       this._parent = field2;
+    //     }
+    //   } else if (this.position.x >= 1500) {
+
+    //     const isAdded = addCardInGameField(field3, this);
+    //     if (isAdded) {
+    //       this.setPosition(-100, -100);
+    //       this.app.stage.removeChild(this);
+    //       this._parent = field3;
+    //     }
+    //   }
+
+    // }
+
+
   }
 
   onDragMove(e) {
-    if (this._dragging && this.parent) {
-      // console.log('clicked');
-      //console.log(this.parent);
-      this.parent.removeChild(this);
-      this.app.stage.addChild(this);
 
-      this.position.x = e.globalX;
-      this.position.y = e.globalY;
-      //console.log(this.position.x);
-      if (this.position.x == 930) {
-        const isAdded = addCardInGameField(field, this);
-        if (isAdded) {
-          this.setPosition(-100, -50);
-          this.app.stage.removeChild(this);
-        }
-      } else if (this.position.x == 1180) {
-        const isAdded = addCardInGameField(field1, this);
-        if (isAdded) {
-          this.setPosition(-100, -50);
-          this.app.stage.removeChild(this);
-        }
-      } else if (this.position.x == 1420) {
-        const isAdded = addCardInGameField(field2, this);
-        if (isAdded) {
-          this.setPosition(-100, -50);
-          this.app.stage.removeChild(this);
-        }
-      } else if (this.position.x == 1670) {
-        const isAdded = addCardInGameField(field3, this);
-        if (isAdded) {
-          this.setPosition(-100, -50);
-          this.app.stage.removeChild(this);
-        }
-        if (this._dragging) {
-          if (this.parent) {
-            this.parent.removeChild(this);
-            this.position.x = e.globalX;
-            this.position.y = e.globalY;
-            this.app.stage.addChild(this);
-            // this.callback();
-          } else {
-          }
-          //  this.pivot.set(200)
-          // const index = this.cards.indexOf(e.target);
-          //const cardsArr = this.cards.slice(index);
-          // console.log(cardsArr);
-          // let container = new Container();
-          // console.log(this._dragging);
-          //console.log(e.target.position);
-          // gsap.to(this, {
-          //   duration: 0.5,
-          //   overwrite: true,
-          //   x: e.globalX,
-          //   y: e.globalY,
-          //   //stagger: 0.15,
-          //   ease: "none"
-          // });
-          // cardsArr.forEach(c => {
-          // c.pivot.set(200, 200);
-          //c.position.set(e.globalX, e.globalY)
-          // })
-          // cardsArr[0].position.x = e.globalX;
-          // cardsArr[0].position.y = e.globalX;
-          // this.position.set (e.globalX, e.globalY)
-        }
-      }
-    }
+    // if (this._dragging && this.isActive) {
+    //   this.parent.removeChild(this);
+    //   this.app.stage.addChild(this);
+    //   this.position.x = e.globalX;
+    //   this.position.y = e.globalY;
+
+
+    //}
   }
 
   onClick(e) {
-    console.log(this);
+
     if (!this.isActive) {
       this.flip();
       if (this.onStart) {
         this.callback1();
-        //this.sendCard(e)
+
       } else {
+        this.flip();
       }
-    } else {
-      //this.callback();
     }
   }
-  sendCard(e) {}
+  checkPower(card: Card) {
+
+    if (this.power + 1 == card.power) {
+      return true;
+    }
+    return false;
+  }
+
+  checkColor(card: Card) {
+    if (this.color != card.color) {
+      return false;
+    } else {
+      return true;
+    }
+
+  }
+
+  add(field: GameField) {
+    field.addChild(this);
+    field.add(this);
+    this._parent = field;
+    this.app.stage.removeChild(this);
+    this.position.set(this.width / 2, this.height / 2)
+  }
+
+  setHeight(field: GameField) {
+    let index = this.fields.indexOf(field);
+    return this.fields[index].getCards().length * 40;
+  }
 }

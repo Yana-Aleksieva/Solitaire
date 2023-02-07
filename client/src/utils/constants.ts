@@ -11,6 +11,9 @@ export const names = [
     'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'
 ]
 
-export const CARD_WIDTH = 180;
-export const CARD_HEIGHT = 240;
+export const CARD_WIDTH = 140;
+export const CARD_HEIGHT = 180;
+
+export const WINDOW_WIDTH = window.innerWidth;
+export const WINDOW_HEIGHT = window.innerHeight;
 

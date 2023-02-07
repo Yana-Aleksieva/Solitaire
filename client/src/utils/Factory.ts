@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import { Card } from "../Card";
-import { CARD_HEIGHT, CARD_WIDTH, cardNames } from "./constants";
+import { CARD_HEIGHT, CARD_WIDTH, cardNames, WINDOW_HEIGHT, WINDOW_WIDTH } from "./constants";
 import { GameField } from "../GameFields";
 import { Tank } from "../Tank";
 
@@ -15,11 +15,11 @@ export function createCards(
 
   for (let i = 0; i <= 3; i++) {
     let x = 50;
-    let power = 0;
+    let power = 1;
     let suite = suites[i];
     for (let j = 0; j <= 12; j++) {
-      const container = new PIXI.Container();
-      container.position.set(100, 100);
+      // const container = new PIXI.Container();
+      // container.position.set(100, 100);
 
       const texture = new PIXI.Texture(
         baseTexture,
@@ -30,18 +30,7 @@ export function createCards(
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
 
-      //create mask
-      // const rect = new PIXI.Graphics();
-      // rect.beginFill(0x00000);
-      // rect.drawRoundedRect(spriteCard.position.x, spriteCard.position.y, CARD_WIDTH, CARD_HEIGHT, 10);
-      // rect.endFill();
 
-      // spriteCard.mask = rect;
-      //container.addChild(spriteCard);
-
-      // Add card name
-
-      //      const card = new Card(cardNames[i][j], power, spriteCard, suite, app, cardContainer);
 
       const card = new Card(
         cardNames[i][j],
@@ -51,6 +40,7 @@ export function createCards(
         onClick,
         app
       );
+
       cards.push(card);
       x += 458;
       power++;
@@ -71,10 +61,7 @@ function shuffleCards(cards: Card[]) {
   }
 }
 
-// export function renderCards(app: PIXI.Application, cardContainer: Tank): Card[] {
-//   const cardTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-//   const cards = createCards(cardTexture, app, cardContainer);
-// }
+
 
 export function renderCards(
   app: PIXI.Application,
@@ -96,10 +83,6 @@ export function createSuitsImages() {
       new PIXI.Rectangle(x, 3640, 185, 180)
     );
     const spriteCard = new PIXI.Sprite(texture);
-    // spriteCard.position.set(0, 0);
-    spriteCard.width = 140;
-    spriteCard.height = 180;
-    //
     suite.push(spriteCard);
     x += 185;
   }
@@ -115,13 +98,14 @@ export function addCardInGameField(gameField: GameField, card: Card) {
     }
     if (gameField.suite == card.suite) {
       gameField.addCard(card);
+
       return true;
     }
     return false;
   }
 
   const lastCard = cards[cards.length - 1];
-  if (lastCard.power < card.power && gameField.suite == card.suite) {
+  if (lastCard.power == card.power - 1 && gameField.suite == card.suite) {
     gameField.addCard(card);
     console.log(gameField.getCards());
   } else {
@@ -139,15 +123,19 @@ export function moveCardFromMainDeckToFlipDeck(
 
 export function getFields(): GameField[] {
   let arr = [];
-  let x = 100;
+  const offsetX = WINDOW_WIDTH / 7;
+  const offsetY = WINDOW_HEIGHT / 2.5;
+  let x = 50;
   let fieldId = 5;
   for (let i = 0; i < 7; i++) {
-    const initialField = new GameField(fieldId++, x, 400, 120, 150);
+    const initialField = new GameField(fieldId++, x, offsetY);
+
     arr.push(initialField);
 
-    //app.stage.addChild(initialField);
-    x += 250;
+    x += offsetX;
   }
 
   return arr;
 }
+
+
