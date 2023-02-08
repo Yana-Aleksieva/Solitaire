@@ -4,42 +4,37 @@ import { CARD_HEIGHT, CARD_WIDTH, cardNames, names, WINDOW_HEIGHT, WINDOW_WIDTH 
 import { GameField } from "../GameFields";
 import { Tank } from "../Tank";
 
-export function createCards(
-  app: PIXI.Application,
-): Card[] {
+export function createSprites() {
   const baseTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
-  const cards: Card[] = [];
+  const sprites = [];
   let y = 850;
-  let suites = ["clubs", "hearts", "spades", "diamonds"];
+  let suites = ["spades", "hearts", "clubs", "diamonds"];
 
   for (let i = 0; i <= 3; i++) {
     let x = 50;
     let power = 1;
     let suite = suites[i];
     for (let j = 0; j <= 12; j++) {
-      // const container = new PIXI.Container();
-      // container.position.set(100, 100);
-
       const texture = new PIXI.Texture(
         baseTexture,
         new PIXI.Rectangle(x, y, 400, 620)
       );
+      const _back: PIXI.Sprite = new PIXI.Sprite(
+        new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
+      );
       const spriteCard = new PIXI.Sprite(texture);
-
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
+      sprites.push({ face: names[j], suite: suites[i], sprite: spriteCard });
+      const newCard = new Card();
 
-      const card = new Card();
-
-      cards.push(card);
+      //sprites.push(spriteCard);
       x += 458;
-      power++;
     }
     y += 660;
   }
 
-  shuffleCards(cards);
-  return cards;
+  return sprites;
 }
 
 function shuffleCards(cards: Card[]) {

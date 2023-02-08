@@ -7,7 +7,7 @@ import {
   addCardInGameField,
   createSuitsImages,
   getFields,
-  createCards,
+  createSprites,
   fillPiles,
 } from "./utils/Factory";
 import { field, field1, field2, field3 } from "./utils/gameField";

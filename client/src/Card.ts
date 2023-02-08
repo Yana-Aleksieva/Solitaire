@@ -41,9 +41,12 @@ export class Card extends PIXI.Container {
     this._dragging = false;
     //this._face = sprite;
 
-
+    this._back.anchor.set(0.5);
+    this._back.width = CARD_WIDTH;
+    this._back.height = CARD_HEIGHT;
+    this.addChild(this._back);
     this.interactive = true;
-    //this.addMask(this._face);
+   // this.addMask();
   }
 
   getCurrentField(x: number, y: number): GameField | null {
@@ -135,8 +138,8 @@ export class Card extends PIXI.Container {
   }
 
   addMask(sprite: PIXI.Sprite) {
-    this._face.renderable = false;
-    this._face.anchor.set(0.5);
+    // this._face.renderable = false;
+    // this._face.anchor.set(0.5);
     this._back.anchor.set(0.5);
     this._back.width = CARD_WIDTH;
     this._back.height = CARD_HEIGHT;
@@ -148,8 +151,8 @@ export class Card extends PIXI.Container {
     rect.drawRoundedRect(0, 0, CARD_WIDTH, CARD_HEIGHT, 10);
     rect.endFill();
     rect.position.set(-CARD_WIDTH / 2, - CARD_HEIGHT / 2);
-    container.addChild(this._face, rect);
-    this._face.mask = rect;
+    container.addChild(rect);
+   // this._face.mask = rect;
     this.addChild(container, this._back);
   }
 

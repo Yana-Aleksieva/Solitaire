@@ -5,7 +5,7 @@ import {
     addCardInGameField,
     createSuitsImages,
     getFields,
-    createCards,
+    createSprites,
     fillPiles,
 } from "../utils/Factory";
 import { field, field1, field2, field3 } from "../utils/gameField";
@@ -24,7 +24,6 @@ export function engine(connection: Connection) {
     let takeSource = null;
 
     connection.on('state', onStart);
-    console.log(connection);
     //connection.on('moves', onMoves);
     connection.on('moveResult', onResult);
     //  connection.on('victory', onVictory);
@@ -35,7 +34,7 @@ export function engine(connection: Connection) {
             width: window.innerWidth,
             height: window.innerHeight,
         });
-        console.log(data);
+        
         document.body.appendChild(app.view as HTMLCanvasElement);
         // Dependency Injection ???
         const container = new Tank(50, 70, data.stock.cards);
@@ -60,15 +59,39 @@ export function engine(connection: Connection) {
 
         async function start() {
             // create cards
-            let cards = createCards(app);
-
+            let sprites = createSprites();
+            
             // render cards
-            cards.forEach((c) => {
-                c.position.set(100, 150);
-                container.addChild(c);
-            });
+            // cards.forEach((c) => {
+            //     c.position.set(100, 150);
+            //     container.addChild(c);
+            // });
 
-            fields = getFields(data.piles); console.log(fields)
+           
+            fields = getFields(data.piles);
+            console.log(fields);
+            fields.forEach((field) => {
+                let bottomPositon = 0;
+                field.cards.forEach((card, i) => {
+                    console.log(card);
+                    if (!card.face) {
+                        const back: PIXI.Sprite = new PIXI.Sprite(
+                            new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
+                        );
+                        back.width = CARD_WIDTH;
+                        back.height = CARD_HEIGHT;
+                        back.position.set(0, bottomPositon);
+                        field.addChild(back);
+                    } else {
+                        const currentCard = sprites.find((s) => s.face == card.face && s.suite == card.suit);
+                        currentCard.sprite.position.set(0, bottomPositon);
+                        console.log(currentCard);
+                        field.addChild(currentCard.sprite);
+                    }
+                    bottomPositon += 40;
+                })
+            })
+
             let score = new TextArea("Score: 0");
             let time = new TextArea("Time: 0.0");
             // fields.forEach(f => {
@@ -83,10 +106,9 @@ export function engine(connection: Connection) {
 
             // });
 
-            container.cards.forEach(card => {
-            });
-            cards.forEach(c => {
-            });
+            // sprites.forEach(c => {
+            //     container.addChild(c);
+            // });
 
             //const searchCard = cards.find((c) => c.suite = "")
             app.stage.addChild(
@@ -106,7 +128,7 @@ export function engine(connection: Connection) {
 
             
             container.on('pointertap', (e) => {
-                console.log("click")
+                //console.log("click")
                 //console.log('container');
                 const action = 'flip';
                 const type = 'stock';
