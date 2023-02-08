@@ -27,6 +27,9 @@ export function engine(connection: Connection) {
     //connection.on('moves', onMoves);
     connection.on('moveResult', onResult);
     //  connection.on('victory', onVictory);
+    let sprites = createSprites()
+    const flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, []);
+
     function onStart(data: any) {
         // add canvas
         const app = new PIXI.Application({
@@ -37,11 +40,12 @@ export function engine(connection: Connection) {
         
         document.body.appendChild(app.view as HTMLCanvasElement);
         // Dependency Injection ???
+        ;
         const container = new Tank(50, 70, data.stock.cards);
         const piles = data.piles;
         const suites = createSuitsImages();
         let fields: GameField[] = [];
-        const flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, []);
+        
         async function init() {
             await PIXI.Assets.load("/assets/sprite.jpg");
             await PIXI.Assets.load("/assets/back.png");
@@ -59,7 +63,7 @@ export function engine(connection: Connection) {
 
         async function start() {
             // create cards
-            let sprites = createSprites();
+            
             
             // render cards
             container.cards.forEach((card) => {
@@ -132,12 +136,9 @@ export function engine(connection: Connection) {
 
             
             container.on('pointertap', (e) => {
-                //console.log("click")
-                //console.log('container');
                 const action = 'flip';
                 const type = 'stock';
                 let currentCard = container.cards[container.cards.length - 1];
-                //console.log(currentCard);
                 if (true) {
                    // console.log(currentCard);
                     data.stock.cards[data.stock.cards.length - 1].faceUp = true;
@@ -195,8 +196,8 @@ export function engine(connection: Connection) {
 
 
     function onResult(data){
-
-        console.log(data)
+        const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
+        console.log(currentCard);
+        flipContainer.addChild(currentCard.sprite);
     }
-
 }
