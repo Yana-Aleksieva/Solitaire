@@ -11,7 +11,6 @@ PixiPlugin.registerPIXI(PIXI);
 const tl = gsap.timeline();
 
 export function dealCards(cards: Card[], fields: GameField[], app) {
-  
     let index = 0;
     let positionIndex = 0;
 
@@ -21,13 +20,10 @@ export function dealCards(cards: Card[], fields: GameField[], app) {
         for (let j = i; j < 7; j++) {
             const f: GameField = fields[j];
             const card = cards[cards.length - index - 1];
-
-            const cardContainer = cards[cards.length - index - 1]
             tl.to(card,
                 {
                     pixi: { x: f.x + card.width, y: f.y + card.height + positionIndex },
                     duration: 0.3,
-
                     onComplete: () => {
 
                         app.stage.addChild(card)
@@ -45,11 +41,8 @@ export function dealCards(cards: Card[], fields: GameField[], app) {
                 });
             index++;
             fieldIndex += 250;
-
         }
         positionIndex += 30;
-
-
     }
 }
 

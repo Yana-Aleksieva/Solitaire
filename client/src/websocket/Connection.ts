@@ -63,7 +63,7 @@ export class Connection extends Emitter {
     }
 
     open(): Promise<void> {
-        if (ws == null || ws.readyState == ws.CLOSED && ws.readyState != ws.CLOSING) {
+        if (ws == null || ws.readyState == ws.CLOSED) {
             console.log('Connecting');
             this.init();
         } else {

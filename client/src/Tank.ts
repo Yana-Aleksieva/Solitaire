@@ -6,12 +6,14 @@ export class Tank extends Container {
 
   constructor(
     x: number,
-    y: number
+    y: number,
+    cards: []
     // private callback: () => void
   ) {
     super();
     this.position.set(x, y);
     this.interactive = true;
+    this.cards = cards;
 
     //this.on('pointertap', this.onClick.bind(this));
   }

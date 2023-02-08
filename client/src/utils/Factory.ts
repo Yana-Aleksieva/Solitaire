@@ -6,7 +6,6 @@ import { Tank } from "../Tank";
 
 export function createCards(
   app: PIXI.Application,
-  onClick
 ): Card[] {
   const baseTexture = new PIXI.BaseTexture("/assets/sprite.jpg");
   const cards: Card[] = [];
@@ -30,14 +29,7 @@ export function createCards(
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
 
-      const card = new Card(
-        j + 1,
-        power,
-        spriteCard,
-        suite,
-        onClick,
-        app
-      );
+      const card = new Card();
 
       cards.push(card);
       x += 458;

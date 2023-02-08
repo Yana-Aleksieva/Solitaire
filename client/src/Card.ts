@@ -30,30 +30,20 @@ export class Card extends PIXI.Container {
   public fields: GameField[];
 
   constructor(
-    name: number,
-    power: number,
-    sprite: PIXI.Sprite,
-    public suite: string,
-    private callback1: () => void,
-    public app: PIXI.Application
   ) {
     super();
     this.interactive = true;
-    this._name = name;
-    this._power = power;
+    //this._name = name;
+    //this._power = power;
     this.fields = [];
     this._container = new PIXI.Container();
     this.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
     this._dragging = false;
-    this._face = sprite;
+    //this._face = sprite;
 
 
     this.interactive = true;
-    this.addMask(this._face);
-    // this.on("pointertap", this.onClick.bind(this));
-    // this.on("mousedown", this.onDragStart.bind(this));
-    // this.on("mouseup", this.onDragEnd.bind(this));
-    // this.on("mousemove", this.onDragMove.bind(this));
+    //this.addMask(this._face);
   }
 
   getCurrentField(x: number, y: number): GameField | null {
@@ -80,8 +70,12 @@ export class Card extends PIXI.Container {
     return this._face;
   }
 
+  get suite() {
+    return this._suite;
+  }
+
   get color() {
-    let suite = this.suite.substring(0);
+    let suite = this._suite.substring(0);
     if (suite == "H" || suite == "D") {
       return "Red";
     } else {
@@ -104,20 +98,15 @@ export class Card extends PIXI.Container {
   }
   
   flip() {
-
     if (!this.isActive) {
       let tl = gsap.timeline();
-
-
       tl.set(this._face.parent, { pixi: { skewY: -90 } });
-
       tl.to(this._back, {
         pixi: { skewY: 90 }, duration: 0.5,
         onStart: () => {
           this._face.renderable = false;
         },
         ease: 'power4.inOut'
-
       })
       tl.to(this._face.parent, {
         pixi: { skewY: 0 }, duration: 0.2,
@@ -141,13 +130,11 @@ export class Card extends PIXI.Container {
     return this._container;
   }
 
-
   get power() {
     return this._power;
   }
 
   addMask(sprite: PIXI.Sprite) {
-
     this._face.renderable = false;
     this._face.anchor.set(0.5);
     this._back.anchor.set(0.5);
@@ -170,83 +157,72 @@ export class Card extends PIXI.Container {
     this._dragging = true;
 
     if (!this.onStart) {
-
       const currentField = this.getCurrentField(e.globalX, e.globalY);
       currentField.removeCard(this);
     }
-
   }
   onDragEnd(e) {
 
-    // this._dragging = false;
-    // if (this.position.y < 300) {
-    //   if (this.position.x > 800 && this.position.x < 1000) {
+    this._dragging = false;
+    if (this.position.y < 300) {
+      if (this.position.x > 800 && this.position.x < 1000) {
 
-    //     const isAdded = addCardInGameField(field, this);
-    //     if (isAdded) {
-    //       this.setPosition(-100, -100);
-    //       this.app.stage.removeChild(this);
-    //       this._parent = field;
-    //     }
-    //   }
+        const isAdded = addCardInGameField(field, this);
+        if (isAdded) {
+          this.setPosition(-100, -100);
+          //this.app.stage.removeChild(this);
+          this._parent = field;
+        }
+      }
 
-    //   else if (this.position.x > 1000 && this.position.x < 1250) {
+      else if (this.position.x > 1000 && this.position.x < 1250) {
 
-    //     const isAdded = addCardInGameField(field1, this);
-    //     if (isAdded) {
-    //       this.setPosition(-100, -100);
-    //       this.app.stage.removeChild(this);
-    //       this._parent = field1;
-    //     }
-    //   } else if (this.position.x > 1250 && this.position.x < 1500) {
+        const isAdded = addCardInGameField(field1, this);
+        if (isAdded) {
+          this.setPosition(-100, -100);
+          //this.app.stage.removeChild(this);
+          this._parent = field1;
+        }
+      } else if (this.position.x > 1250 && this.position.x < 1500) {
 
-    //     const isAdded = addCardInGameField(field2, this);
-    //     if (isAdded) {
-    //       this.setPosition(-100, -100);
-    //       this.app.stage.removeChild(this);
-    //       this._parent = field2;
-    //     }
-    //   } else if (this.position.x >= 1500) {
+        const isAdded = addCardInGameField(field2, this);
+        if (isAdded) {
+          this.setPosition(-100, -100);
+          //this.app.stage.removeChild(this);
+          this._parent = field2;
+        }
+      } else if (this.position.x >= 1500) {
 
-    //     const isAdded = addCardInGameField(field3, this);
-    //     if (isAdded) {
-    //       this.setPosition(-100, -100);
-    //       this.app.stage.removeChild(this);
-    //       this._parent = field3;
-    //     }
-    //   }
-
-    // }
-
-
+        const isAdded = addCardInGameField(field3, this);
+        if (isAdded) {
+          this.setPosition(-100, -100);
+         // this.app.stage.removeChild(this);
+          this._parent = field3;
+        }
+      }
+    }
   }
 
   onDragMove(e) {
-
-    // if (this._dragging && this.isActive) {
-    //   this.parent.removeChild(this);
-    //   this.app.stage.addChild(this);
-    //   this.position.x = e.globalX;
-    //   this.position.y = e.globalY;
-
-
-    //}
+    if (this._dragging && this.isActive) {
+      this.parent.removeChild(this);
+      //this.app.stage.addChild(this);
+      this.position.x = e.globalX;
+      this.position.y = e.globalY;
+    }
   }
 
   onClick(e) {
-
     if (!this.isActive) {
       this.flip();
       if (this.onStart) {
-        this.callback1();
-
+        //this.callback1();
       } else {
         this.flip();
       }
     }
   }
   checkPower(card: Card) {
-
     if (this.power + 1 == card.power) {
       return true;
     }
@@ -259,14 +235,13 @@ export class Card extends PIXI.Container {
     } else {
       return true;
     }
-
   }
 
   add(field: GameField) {
     field.addChild(this);
     field.add(this);
     this._parent = field;
-    this.app.stage.removeChild(this);
+    //this.app.stage.removeChild(this);
     this.position.set(this.width / 2, this.height / 2)
   }
 
