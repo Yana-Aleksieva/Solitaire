@@ -62,10 +62,14 @@ export function engine(connection: Connection) {
             let sprites = createSprites();
             
             // render cards
-            // cards.forEach((c) => {
-            //     c.position.set(100, 150);
-            //     container.addChild(c);
-            // });
+            container.cards.forEach((card) => {
+                const back: PIXI.Sprite = new PIXI.Sprite(
+                    new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
+                );
+                back.width = CARD_WIDTH;
+                back.height = CARD_HEIGHT;
+                container.addChild(back);
+            })
 
            
             fields = getFields(data.piles);
