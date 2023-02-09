@@ -15,12 +15,13 @@ export class GameField extends PIXI.Container {
   private _position: { x: number; y: number };
   private _image: PIXI.Sprite;
   private _imageContainer: PIXI.Container;
-
+type: string
   constructor(
     public id: number,
     x: number,
     y: number,
     piles: [],
+    type: 'pile'| 'foundation'| 'flip',
     suite?: string,
     image?: PIXI.Sprite
   ) {
@@ -32,6 +33,7 @@ export class GameField extends PIXI.Container {
     (this.position.x = x),
       (this.position.y = y),
       this.createField();
+    this.interactive = true;
 
   }
 

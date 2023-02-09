@@ -15,10 +15,26 @@ export class Player {
             console.log('new game');
             this.onNewGame();
         });
+        this.connection.on('move', data => {
+            console.log('move', data);
+            this.onMove(data);
+        });
+        this.connection.on('getState', data => {
+            console.log('refreshing state', data);
+            this.onGetState();
+        });
     }
 
     onNewGame() {
-        // Placeholders to be registered from outside
+        // Placeholder to be registered from outside
+    }
+
+    onMove(move) {
+        // Placeholder to be registered from outside
+    }
+
+    onGetState() {
+        // Placeholder to be registered from outside
     }
 
     setGameState(state) {
@@ -27,5 +43,13 @@ export class Player {
 
     setValidMoves(moves) {
         this.connection.send('moves', moves);
+    }
+
+    moveResult(result) {
+        this.connection.send('moveResult', result);
+    }
+
+    victory() {
+        this.connection.send('victory');
     }
 }

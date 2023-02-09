@@ -133,5 +133,17 @@ describe('Pile', () => {
             expect(stack.flip()).toBeFalsy();
             expect(stack.top.faceUp).toBeTruthy();
         });
+
+        test('attempt to place multiple cards', () => {
+            const cards = [
+                new Card(faces.Three, suits.Clubs, true),
+                new Card(faces.Two, suits.Hearts, true)
+            ];
+
+            stack.place(cards);
+            expect(stack.cards.length).toBe(4);
+            expect(stack.cards[2].face).toBe(faces.Three);
+            expect(stack.cards[3].face).toBe(faces.Two);
+        });
     });
 });

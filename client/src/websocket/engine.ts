@@ -23,12 +23,15 @@ export function engine(connection: Connection) {
     let cachedMoves = null;
     let takeSource = null;
 
-    connection.on('state', onStart);
-    //connection.on('moves', onMoves);
+    connection.on('state', onState);
+    connection.on('moves', onMoves);
     connection.on('moveResult', onResult);
-    //  connection.on('victory', onVictory);
+    connection.on('victory', onVictory);
     let sprites = createSprites()
-    const flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, []);
+    const flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, [], 'flip');
+    console.log(state)
+
+
 
     function onStart(data: any) {
         // add canvas
@@ -37,15 +40,16 @@ export function engine(connection: Connection) {
             width: window.innerWidth,
             height: window.innerHeight,
         });
-        
+
         document.body.appendChild(app.view as HTMLCanvasElement);
         // Dependency Injection ???
-        ;
+
         const container = new Tank(50, 70, data.stock.cards);
         const piles = data.piles;
         const suites = createSuitsImages();
+
         let fields: GameField[] = [];
-        
+
         async function init() {
             await PIXI.Assets.load("/assets/sprite.jpg");
             await PIXI.Assets.load("/assets/back.png");
@@ -63,9 +67,10 @@ export function engine(connection: Connection) {
 
         async function start() {
             // create cards
-            
-            
-            // render cards
+
+
+            // render cards in container 
+            //console.log(container.cards)
             container.cards.forEach((card) => {
                 const back: PIXI.Sprite = new PIXI.Sprite(
                     new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
@@ -75,14 +80,15 @@ export function engine(connection: Connection) {
                 container.addChild(back);
             })
 
-           
+
             fields = getFields(data.piles);
-            console.log(fields);
+            //console.log(fields);
             fields.forEach((field) => {
                 let bottomPositon = 0;
+                //render cards from server
                 field.cards.forEach((card, i) => {
-                    console.log(card);
-                    if (!card.face) {
+                    // console.log(card);
+                    if (!card.faceUp) {
                         const back: PIXI.Sprite = new PIXI.Sprite(
                             new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
                         );
@@ -93,31 +99,15 @@ export function engine(connection: Connection) {
                     } else {
                         const currentCard = sprites.find((s) => s.face == card.face && s.suite == card.suit);
                         currentCard.sprite.position.set(0, bottomPositon);
-                        console.log(currentCard);
+                        //console.log(currentCard);
                         field.addChild(currentCard.sprite);
                     }
                     bottomPositon += 40;
                 })
-            })
+            });
 
             let score = new TextArea("Score: 0");
             let time = new TextArea("Time: 0.0");
-            // fields.forEach(f => {
-            //     let card = f.cards[f.cards.length - 1];
-
-            //     let face = cards.find(c =>
-            //         c.suite === card.suit && c.power === card.face
-            //     );
-            //     f.addChild(face);
-            //     face.position.set(CARD_WIDTH, CARD_HEIGHT);
-            //     face.flip();
-
-            // });
-
-            // sprites.forEach(c => {
-            //     container.addChild(c);
-            // });
-
             //const searchCard = cards.find((c) => c.suite = "")
             app.stage.addChild(
                 field,
@@ -134,70 +124,146 @@ export function engine(connection: Connection) {
             score.position.set(WINDOW_WIDTH - 300, 30);
             time.position.set(WINDOW_WIDTH - 100, 30);
 
-            
+
             container.on('pointertap', (e) => {
+
+
                 const action = 'flip';
                 const type = 'stock';
                 let currentCard = container.cards[container.cards.length - 1];
-                if (true) {
-                   // console.log(currentCard);
-                    data.stock.cards[data.stock.cards.length - 1].faceUp = true;
-                    console.log(data.stock.cards[data.stock.cards.length - 1])
+
+                if (currentCard) {
+
                     move = {
                         action,
                         source: type,
                         target: null,
-                        index: 20
+                        index: container.cards.indexOf(currentCard)
                     };
-                    console.log(connection);
+                    console.log(move.index);
                     connection.send('move', move);
-                    // connection.send('moves', data);
-                    // connection.on('moves', onMove)
-                    //connection.on('send', )
-                    // const tempContainer = new PIXI.Container();
-                    // container.rem(currentCard);
-                    // tempContainer.addChild(currentCard);
-                    // // tempContainer.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
-                    // tempContainer.position.set(container.x, container.y)
-                    // app.stage.addChild(tempContainer);
-                    // moveCard(tempContainer, flipContainer, currentCard);
-                    // currentCard.flip();
-                    // tempContainer.removeChild(currentCard);
-                    // flipContainer.addChild(currentCard);
-                    // flipContainer.add(currentCard);
-                    // currentCard.position.set(CARD_WIDTH, CARD_HEIGHT);
-                    // app.stage.removeChild(tempContainer);
-                    // console.log(flipContainer.cards)
 
                 }
 
             });
 
+            flipContainer.on('pointertap', (e) => {
+                let validMoves = [];
+               // console.log('click-flipcontainer');
+                let lastCard = flipContainer.cards[flipContainer.cards.length - 1];
+                if (lastCard) {
+                    //console.log(lastCard);
+                    //console.log(moves.waste.take);
+                    move = {
+                        action: 'take',
+                        source: 'stock',
+                        target: null,
+                        index: flipContainer.cards.indexOf(lastCard)
+
+                    };
+                    // console.log(move.action)
+                    connection.send('moves', move);
+              
+                    // state.piles.forEach(p => {
+                    //     //console.log(p.moves.place, state.piles)
+                    //     if (p.moves.place) {
+                    //         validMoves.push(p);
+                    //         console.log(p.moves.place, 'yes')
+                    //     }
+                    // });
+                    // moves.foundations.forEach(p => {
+                    //     if (p.place === true) {
+                    //         if (p.place === true) {
+                    //             validMoves.push(p);
+                    //         }
+                    //     }
+                    // });
+                 
+                }
+            });
+
         }
 
+
+
+
         function onClick() {
-            // const current = container.cards[container.cards.length - 1];
-            // container.remove(current);
-            // current.onStart = true;
-            // flipContainer.add(current);
-            // current._parent = flipContainer
+
         }
 
         function onMove(moves) {
             console.log(moves);
         }
-    }
 
+
+    }
+    function onResult(data) {
+       // console.log(move, data);
+        if (move != null) {
+            // console.log(move.action)
+            if (move.action == 'flip') {
+                if (move.source == 'stock') {
+                    // const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
+                    // console.log(currentCard);
+                    // flipContainer.addChild(currentCard.sprite);
+                    // flipContainer.cards.push(data);
+                    // container.cards.pop();
+                    // container.removeChild(container.children[container.children.length-1])
+                    // }
+                    // 
+                    if (state.stock.cards.length > 0) {
+                        state.stock.cards.pop();
+                        state.waste.cards.push(data);
+                        flipContainer.cards = state.waste.cards;
+                        //console.log(flipContainer.cards);
+                        const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
+                        //console.log(currentCard);
+                        flipContainer.addChild(currentCard.sprite);
+                    } else {
+                        state.waste.cards.reverse();
+                        state.stock.cards.push(...state.waste.cards);
+                        state.stock.cards.forEach(c => c.faceUp = false);
+                        state.waste.cards.length = 0;
+                    }
+                }
+
+            } else if (move.action == 'take' && data == true) {
+
+                let validMoves = null;
+                if (move.source == 'stock') {
+                    validMoves = moves;
+                    console.log(moves)
+                }
+
+                //console.log(validMoves)
+            }
+        }
+
+    }
     function onMoves(receivedMoves) {
         moves = receivedMoves;
         console.log('received moves', moves);
-        //  mergeMoves();
+        console.log(moves);
+        //mergeMoves();
+    }
+    function onState(receivedState) {
+        console.log('received state', receivedState);
+        state = receivedState;
+        onStart(state);
+    }
+
+    function mergeMoves() {
+        state.stock.moves = moves.stock;
+        state.waste.moves = moves.waste;
+        Object.values(state.foundations).forEach((f: any) => f.moves = moves.foundations[f.suit]);
+        state.piles.forEach((p, i) => p.moves = moves.piles[i]);
     }
 
 
-    function onResult(data){
-        const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
-        console.log(currentCard);
-        flipContainer.addChild(currentCard.sprite);
+    function onVictory() {
+        alert('Victory!');
+        connection.send('newGame');
     }
+
+
 }

@@ -159,12 +159,17 @@ export class Stack {
 
     take(index) {
         if (this.canTake(index)) {
-            return this.cards.splice(index, this.topIndex);
+            return this.cards.splice(index, this.cards.length - index);
         } else {
             return null;
         }
     }
 
+    /**
+     * 
+     * @param {Card | Card[]} cards 
+     * @returns {boolean}
+     */
     place(cards) {
         if (Array.isArray(cards) == false) {
             cards = [cards];

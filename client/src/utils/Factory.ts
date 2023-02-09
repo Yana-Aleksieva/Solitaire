@@ -102,7 +102,7 @@ export function getFields(data): GameField[] {
   let x = 50;
   let fieldId = 5;
   for (let i = 0; i < 7; i++) {
-    const initialField = new GameField(fieldId++, x, offsetY, data[i].cards);
+    const initialField = new GameField(fieldId++, x, offsetY, data[i].cards, 'pile');
     arr.push(initialField);
     x += offsetX;
   }

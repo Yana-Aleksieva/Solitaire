@@ -10,6 +10,21 @@ import { Deck, Stack, stacks, suits } from './cards.js';
  */
 
 /**
+ * @typedef {Object} Moveset
+ * @property {Move} stock,
+ * @property {Move} waste,
+ * @property {{[suit: string]: Move}} foundations,
+ * @property {[Move, Move, Move, Move, Move, Move, Move]} piles,
+ */
+
+/**
+ * @typedef {Object} Move
+ * @property {boolean} flip
+ * @property {number[]} take
+ * @property {boolean} place
+ */
+
+/**
  * 
  * @returns {GameState}
  */
@@ -32,6 +47,40 @@ export function createState() {
             createPile(),
             createPile(),
         ]
+    };
+}
+
+/**
+ * 
+ * @param {GameState} state
+ * @param {Card[]?} cards
+ * @returns {Moveset}
+ */
+export function createMoveset(state, cards) {
+    return {
+        stock: checkMoves(state.stock, cards),
+        waste: checkMoves(state.waste, cards),
+        foundations: {
+            [suits.Clubs]: checkMoves(state.foundations[suits.Clubs], cards),
+            [suits.Diamonds]: checkMoves(state.foundations[suits.Diamonds], cards),
+            [suits.Hearts]: checkMoves(state.foundations[suits.Hearts], cards),
+            [suits.Spades]: checkMoves(state.foundations[suits.Spades], cards),
+        },
+        piles: state.piles.map(p => checkMoves(p, cards))
+    };
+}
+
+/**
+ * 
+ * @param {Stack} stack
+ * @param {Card[]?} cards
+ * @returns {Move}
+ */
+export function checkMoves(stack, cards) {
+    return {
+        flip: cards == undefined && stack.canFlip(),
+        take: stack.cards.map((c,i) => stack.canTake(i) && i).filter(i => i !== false && cards == undefined),
+        place: cards != undefined && stack.canPlace(cards)
     };
 }
 
