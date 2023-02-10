@@ -25,7 +25,8 @@ export function createSprites() {
       const spriteCard = new PIXI.Sprite(texture);
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
-      sprites.push({ face: names[j], suite: suites[i], sprite: spriteCard });
+      const container = addMask(spriteCard)
+      sprites.push({ face: names[j], suite: suites[i], sprite: container });
       const newCard = new Card();
 
       //sprites.push(spriteCard);
@@ -95,20 +96,34 @@ export function moveCardFromMainDeckToFlipDeck(
   flipContainer.addChild(card);
 }
 
-export function getFields(data): GameField[] {
+export function getFields(data, c?: () => void): GameField[] {
   let arr = [];
   const offsetX = WINDOW_WIDTH / 7;
   const offsetY = WINDOW_HEIGHT / 2.5;
   let x = 50;
   let fieldId = 5;
   for (let i = 0; i < 7; i++) {
-    const initialField = new GameField(fieldId++, x, offsetY, data[i].cards, 'pile');
+    const initialField = new GameField(fieldId++, x, offsetY, data[i].cards, `pile${i}`);
     arr.push(initialField);
     x += offsetX;
   }
   return arr;
 }
 
+function addMask(sprite: PIXI.Sprite) {
+
+  const container = new PIXI.Container();
+
+  const rect = new PIXI.Graphics();
+  rect.beginFill(0xfffff);
+  rect.drawRoundedRect(0, 0, CARD_WIDTH, CARD_HEIGHT, 10);
+  rect.endFill();
+  rect.pivot.set(CARD_WIDTH / 2, CARD_HEIGHT / 2)
+  rect.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
+  sprite.mask = rect;
+  container.addChild(sprite, rect);
+  return container;
+}
 export function fillPiles() {
 
 }

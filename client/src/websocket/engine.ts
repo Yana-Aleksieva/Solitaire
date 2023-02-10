@@ -27,47 +27,52 @@ export function engine(connection: Connection) {
     connection.on('moves', onMoves);
     connection.on('moveResult', onResult);
     connection.on('victory', onVictory);
-    let sprites = createSprites()
-    const flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, [], 'flip');
-    console.log(state)
+    let sprites = createSprites();
+
+
+    let flipContainer;
 
 
 
-    function onStart(data: any) {
+    function onStart(state) {
         // add canvas
         const app = new PIXI.Application({
             background: "0x006E33",
             width: window.innerWidth,
             height: window.innerHeight,
         });
-
-        document.body.appendChild(app.view as HTMLCanvasElement);
-        // Dependency Injection ???
-
-        const container = new Tank(50, 70, data.stock.cards);
-        const piles = data.piles;
-        const suites = createSuitsImages();
-
-        let fields: GameField[] = [];
+        //  console.log(state.waste.cards)
 
         async function init() {
             await PIXI.Assets.load("/assets/sprite.jpg");
             await PIXI.Assets.load("/assets/back.png");
         }
 
-        init().then(start)
+        init().then(() => start(state))
         // .then(() => shuffleCards(cards))
         //  .then(() => dealCards(cards, fields, app))
 
-        interface TypeCard {
-            face: number;
-            suit: string;
-            faceUp: boolean;
-        }
 
-        async function start() {
+
+        async function start(state) {
             // create cards
+            interface TypeCard {
+                face: number;
+                suit: string;
+                faceUp: boolean;
+            }
+            document.body.appendChild(app.view as HTMLCanvasElement);
+            // Dependency Injection ???
 
+            const container = new Tank(50, 70, state.stock.cards, onFlip.bind(null));
+            // console.log(container.cards)
+            flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'waste');
+
+
+            const piles = state.piles;
+            const suites = createSuitsImages();
+
+            let fields: GameField[] = getFields(state.piles);
 
             // render cards in container 
             //console.log(container.cards)
@@ -81,7 +86,7 @@ export function engine(connection: Connection) {
             })
 
 
-            fields = getFields(data.piles);
+
             //console.log(fields);
             fields.forEach((field) => {
                 let bottomPositon = 0;
@@ -124,10 +129,7 @@ export function engine(connection: Connection) {
             score.position.set(WINDOW_WIDTH - 300, 30);
             time.position.set(WINDOW_WIDTH - 100, 30);
 
-
-            container.on('pointertap', (e) => {
-
-
+            function onFlip() {
                 const action = 'flip';
                 const type = 'stock';
                 let currentCard = container.cards[container.cards.length - 1];
@@ -140,47 +142,36 @@ export function engine(connection: Connection) {
                         target: null,
                         index: container.cards.indexOf(currentCard)
                     };
-                    console.log(move.index);
+                    // console.log(move.index);
                     connection.send('move', move);
 
+
                 }
+            }
 
-            });
+            // function onTake() {
 
-            flipContainer.on('pointertap', (e) => {
-                let validMoves = [];
-               // console.log('click-flipcontainer');
-                let lastCard = flipContainer.cards[flipContainer.cards.length - 1];
-                if (lastCard) {
-                    //console.log(lastCard);
-                    //console.log(moves.waste.take);
-                    move = {
-                        action: 'take',
-                        source: 'stock',
-                        target: null,
-                        index: flipContainer.cards.indexOf(lastCard)
 
-                    };
-                    // console.log(move.action)
-                    connection.send('moves', move);
-              
-                    // state.piles.forEach(p => {
-                    //     //console.log(p.moves.place, state.piles)
-                    //     if (p.moves.place) {
-                    //         validMoves.push(p);
-                    //         console.log(p.moves.place, 'yes')
-                    //     }
-                    // });
-                    // moves.foundations.forEach(p => {
-                    //     if (p.place === true) {
-                    //         if (p.place === true) {
-                    //             validMoves.push(p);
-                    //         }
-                    //     }
-                    // });
-                 
-                }
-            });
+
+            // }
+
+            fields.forEach(f => f.on('pointertap', (e) => {
+
+                let lastCard = f.cards[f.cards.length - 1]
+                move = {
+                    action: 'take',
+                    source: `${f.type}`,
+                    target: null,
+                    index: f.cards.indexOf(lastCard)
+
+                };
+                connection.send('move', move);
+                console.log(e.target);
+                console.log(moves.piles);
+               // if()
+
+                
+            }))
 
         }
 
@@ -198,54 +189,55 @@ export function engine(connection: Connection) {
 
     }
     function onResult(data) {
-       // console.log(move, data);
+         console.log(move, data);
         if (move != null) {
             // console.log(move.action)
             if (move.action == 'flip') {
                 if (move.source == 'stock') {
-                    // const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
-                    // console.log(currentCard);
-                    // flipContainer.addChild(currentCard.sprite);
-                    // flipContainer.cards.push(data);
-                    // container.cards.pop();
-                    // container.removeChild(container.children[container.children.length-1])
-                    // }
-                    // 
+
+
                     if (state.stock.cards.length > 0) {
+                        console.log(state);
                         state.stock.cards.pop();
                         state.waste.cards.push(data);
                         flipContainer.cards = state.waste.cards;
-                        //console.log(flipContainer.cards);
+                        // //console.log(flipContainer.cards);
                         const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
-                        //console.log(currentCard);
+                        // //console.log(currentCard);
                         flipContainer.addChild(currentCard.sprite);
+                        // } 
+                        stateToStage(state)
                     } else {
                         state.waste.cards.reverse();
                         state.stock.cards.push(...state.waste.cards);
                         state.stock.cards.forEach(c => c.faceUp = false);
                         state.waste.cards.length = 0;
                     }
+
+                } else if (move.action == 'place' && data == true) {
+
+                    let validMoves = null;
+                    if (move.source == 'stock') {
+                        validMoves = data;
+                        // console.log(moves)
+                        console.log(validMoves, moves.waste, 'oooooooooooo');
+                    }
+
+
                 }
-
-            } else if (move.action == 'take' && data == true) {
-
-                let validMoves = null;
-                if (move.source == 'stock') {
-                    validMoves = moves;
-                    console.log(moves)
-                }
-
-                //console.log(validMoves)
             }
-        }
 
+        }
     }
+
+
     function onMoves(receivedMoves) {
         moves = receivedMoves;
         console.log('received moves', moves);
-        console.log(moves);
-        //mergeMoves();
+        //console.log(moves);
+        mergeMoves();
     }
+
     function onState(receivedState) {
         console.log('received state', receivedState);
         state = receivedState;
@@ -257,6 +249,7 @@ export function engine(connection: Connection) {
         state.waste.moves = moves.waste;
         Object.values(state.foundations).forEach((f: any) => f.moves = moves.foundations[f.suit]);
         state.piles.forEach((p, i) => p.moves = moves.piles[i]);
+
     }
 
 
@@ -265,5 +258,9 @@ export function engine(connection: Connection) {
         connection.send('newGame');
     }
 
+    function stateToStage(state) {
+        console.log(state);
+        //  onStart(state)
+    }
 
 }

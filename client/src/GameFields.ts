@@ -15,15 +15,19 @@ export class GameField extends PIXI.Container {
   private _position: { x: number; y: number };
   private _image: PIXI.Sprite;
   private _imageContainer: PIXI.Container;
-type: string
+  type: string
+
+
   constructor(
     public id: number,
     x: number,
     y: number,
     piles: [],
-    type: 'pile'| 'foundation'| 'flip',
+    type,
+    private callback?: () => void,
     suite?: string,
-    image?: PIXI.Sprite
+    image?: PIXI.Sprite,
+
   ) {
     super();
     this.cards = piles;
@@ -34,7 +38,8 @@ type: string
       (this.position.y = y),
       this.createField();
     this.interactive = true;
-
+    this.type = type
+    this.on('pointertap', this.onClick.bind(this))
   }
 
   get suite() {
@@ -142,6 +147,14 @@ type: string
 
   add(card: Card) {
     this.cards.push(card);
+  }
+
+  onClick(e) {
+   
+    if (this.callback) {
+      this.callback();
+    }
+
   }
 }
 

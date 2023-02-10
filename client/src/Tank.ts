@@ -7,15 +7,15 @@ export class Tank extends Container {
   constructor(
     x: number,
     y: number,
-    cards: []
-    // private callback: () => void
+    cards: [],
+   private callback: () => void
   ) {
     super();
     this.position.set(x, y);
     this.interactive = true;
     this.cards = cards;
 
-    //this.on('pointertap', this.onClick.bind(this));
+    this.on('pointertap', this.onClick.bind(this));
   }
 
   add(child: Card) {
@@ -37,5 +37,10 @@ export class Tank extends Container {
 
   getCardIndex(card: Card) {
     return this.cards.indexOf(card);
+  }
+
+  onClick(e){
+    console.log(e.target, this.cards);
+    this.callback();
   }
 }
