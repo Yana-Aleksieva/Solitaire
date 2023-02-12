@@ -20,6 +20,7 @@ export function engine(connection: Connection) {
     let state: any = {};
     let move = null;
     let moves = null;
+    let previousMove = null;
     let cachedMoves = null;
     let takeSource = null;
 
@@ -68,7 +69,7 @@ export function engine(connection: Connection) {
             // console.log(container.cards)
             flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'waste');
 
-
+            console.log(state)
             const piles = state.piles;
             const suites = createSuitsImages();
 
@@ -157,7 +158,9 @@ export function engine(connection: Connection) {
 
             fields.forEach(f => f.on('pointertap', (e) => {
 
-                let lastCard = f.cards[f.cards.length - 1]
+                let currentSprites = [];
+                let lastCard = f.cards[f.cards.length - 1];
+                console.log(moves)
                 move = {
                     action: 'take',
                     source: `${f.type}`,
@@ -165,12 +168,44 @@ export function engine(connection: Connection) {
                     index: f.cards.indexOf(lastCard)
 
                 };
-                connection.send('move', move);
-                console.log(e.target);
-                console.log(moves.piles);
-               // if()
+                // sprites.find((s) => s.face == data.face && s.suite == data.suit);
+                let target = e.target as GameField;
 
-                
+                connection.send('move', move);
+                // console.log(e.target);
+                // console.log(moves.piles);
+                // console.log(cachedMoves, takeSource);
+                let t;
+                console.log(moves)
+                moves.piles.find((p, i) => {
+                    if (p.place == true) {
+                        t = i;
+                    }
+
+                });
+                let type = target.type.substring(4);
+                console.log(t, moves, type, move.source);
+                if (type == t) {
+                    console.log(moves, e.type, state.piles);
+                    console.log(previousMove)
+                    move = {
+                        action: 'place',
+                        source: previousMove.source,
+                        target: move.source,
+                        index: previousMove.index
+
+                    };
+                    let target = fields.find(f => f.type == move.source);
+                    let source = fields.find(f => f.type == previousMove.source);
+                    console.log(target, source)
+
+                   connection.send('move', move);
+                    console.log(move);
+
+                  
+                }
+                previousMove = move;
+
             }))
 
         }
@@ -189,7 +224,7 @@ export function engine(connection: Connection) {
 
     }
     function onResult(data) {
-         console.log(move, data);
+        console.log(move, data, 'onResult');
         if (move != null) {
             // console.log(move.action)
             if (move.action == 'flip') {
@@ -201,9 +236,7 @@ export function engine(connection: Connection) {
                         state.stock.cards.pop();
                         state.waste.cards.push(data);
                         flipContainer.cards = state.waste.cards;
-                        // //console.log(flipContainer.cards);
                         const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
-                        // //console.log(currentCard);
                         flipContainer.addChild(currentCard.sprite);
                         // } 
                         stateToStage(state)
@@ -219,9 +252,13 @@ export function engine(connection: Connection) {
                     let validMoves = null;
                     if (move.source == 'stock') {
                         validMoves = data;
-                        // console.log(moves)
-                        console.log(validMoves, moves.waste, 'oooooooooooo');
+                     
+
+                    } else {
+                        console.log(moves)
                     }
+
+
 
 
                 }
@@ -235,7 +272,7 @@ export function engine(connection: Connection) {
         moves = receivedMoves;
         console.log('received moves', moves);
         //console.log(moves);
-        mergeMoves();
+        // mergeMoves();
     }
 
     function onState(receivedState) {
