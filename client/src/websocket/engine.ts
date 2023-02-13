@@ -18,7 +18,6 @@ import { Card } from "../Card";
 
 export function engine(connection: Connection) {
     let state: any = {};
-    let move = null;
     let moves = null;
     let previousMove = null;
     let previousCard = null;
@@ -32,9 +31,7 @@ export function engine(connection: Connection) {
     connection.on('victory', onVictory);
     let sprites = createSprites();
 
-
     let flipContainer: GameField;
-
 
 
     function onStart(state) {
@@ -67,8 +64,8 @@ export function engine(connection: Connection) {
 
             const container = new Tank(50, 70, state.stock.cards, onFlip.bind(null));
       
-            flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'stock');
-            flipContainer.on("pointertap", onPlace)
+            // flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'stock');
+            // flipContainer.on("pointertap", onPlace)
             // flipContainer.on("pointertap", () => {
             //     const lastCard = flipContainer.cards[flipContainer.cards.length - 1];
             //     const lastIndex = container.cards.indexOf(lastCard);
@@ -145,7 +142,7 @@ export function engine(connection: Connection) {
                 let currentCard = container.cards[container.cards.length - 1];
 
                 if (currentCard) {
-                    move = {
+                    const move = {
                         action,
                         source: type,
                         target: null,
@@ -153,79 +150,67 @@ export function engine(connection: Connection) {
                     };
                     // console.log(move.index);
                     connection.send('move', move);
+                    previousMove = move;
                 }
             }
 
             fields.forEach(f => f.on('pointertap', onPlace));
 
-            field.on('pointertap', onPlace);
-            field1.on('pointertap', onPlace)
-            field2.on('pointertap', onPlace)
-            field3.on('pointertap', onPlace)
+            // field.on('pointertap', onPlace);
+            // field1.on('pointertap', onPlace)
+            // field2.on('pointertap', onPlace)
+            // field3.on('pointertap', onPlace)
 
+            function onPlace(e: PIXI.FederatedMouseEvent) {
+                let move = null;
+                //const f = e.target as GameField;
+                let target = e.target as GameField;
 
-            function onPlace(e: MouseEvent) {
-                const f = e.target as GameField;
-                
-                console.log(f.type);
-                let lastCard = f.cards[f.cards.length - 1];
-                console.log(lastCard, f, 'faceUp')
-
+                let lastCard = target.cards[target.cards.length - 1];
                 if (lastCard.faceUp == true) {
-                    move = {
-                        action: 'take',
-                        source: `${f.type}`,
-                        target: null,
-                        index: f.cards.indexOf(lastCard)
-
-                    };
-                    let target = e.target as GameField;
-
-                    connection.send('move', move);
+                   
                     let indexTrue;
-
                     moves.piles.find((p, i) => {
                         if (p.place == true) {
                             indexTrue = i;
                         }
                     });
+                    console.log(indexTrue);
                     let type = target.type.substring(4);
-
                     //console.log(indexTrue, moves, type, move.source);
-                    if (Number(type) === indexTrue) {
-
-                        console.log(moves, e.type, state.piles);
-                        console.log(previousMove);
-
-                        // console.log(moves, e.type, state.piles);
-                        // console.log(previousMove);
-
+                    if (Number(type) === indexTrue && target.type == "stock" || Number(type) == indexTrue && target.type.includes("pile")) {
+                        console.log(target);
                         move = {
                             action: 'place',
                             source: previousMove.source,
-                            target: move.source,
+                            target: target.type,
                             index: previousMove.index
                         };
-
-                        connection.send('move', move);
-                        // console.log(move);
-                        let target = fields.find(f => f.type == move.source);
-                        let source = fields.find(f => f.type == previousMove.source);
-                        console.log(target, source);
+                        console.log(move);
+                        console.log(previousMove);
+                        // let target = fields.find(f => f.type == move.source);
+                        // let source = fields.find(f => f.type == previousMove.source);
+                        // console.log(target, source);
+                    } else {
+                        move = {
+                            action: 'take',
+                            source: `${target.type}`,
+                            target: null,
+                            index: target.cards.indexOf(lastCard)
+                        };
                     }
-                    previousMove = move;
-
+                    connection.send('move', move);
                 } else {
-
                     move = {
                         action: 'flip',
-                        source: f.type,
+                        source: target.type,
                         target: null,
-                        index: f.cards.indexOf(lastCard)
+                        index: target.cards.indexOf(lastCard)
                     };
-                    console.log(move.index, f.cards.indexOf(lastCard));
+                    console.log(move.index, target.cards.indexOf(lastCard));
                     connection.send('move', move);
                 }
+                previousMove = move;
             }
 
             function onClick() {
@@ -239,59 +224,49 @@ export function engine(connection: Connection) {
     }
 
     function onResult(data) {
-        console.log(move, data, 'onResult');
-        if (move != null) {
-            // console.log(move.action)
-            if (move.action == 'flip') {
-                if (move.source == 'stock') {
+        console.log(previousMove);
+
+        if (previousMove != null) {
+            if (previousMove.action == 'flip') {
+                if (previousMove.source == 'stock') {
                     if (state.stock.cards.length > 0) {
-                        console.log(state);
                         state.stock.cards.pop();
                         state.waste.cards.push(data);
                         flipContainer.cards = state.waste.cards;
                         const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
                         flipContainer.addChild(currentCard.sprite);
-                        //flipContainer.cards.push(data);
-                        // } 
-                        //stateToStage(state)
                     } else {
                         state.waste.cards.reverse();
                         state.stock.cards.push(...state.waste.cards);
                         state.stock.cards.forEach(c => c.faceUp = false);
                         state.waste.cards.length = 0;
                     }
-
                 } else {
-                    //console.log(data, 'resulr');
                     const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
-                    const currentField = fields.find(f => f.type === move.source);
+                    const currentField = fields.find(f => f.type === previousMove.source);
                     currentField.removeChild(currentField.children[currentField.children.length - 1]);
                     currentField.addChild(currentCard.sprite);
                     currentField.cards.push(data);
                     currentCard.sprite.position.set(0, (currentField.cards.length - 1) * 40)
-                    // console.log(move.source, currentCard, 'movesss');
                 }
-            } else if (move.action == 'take') {
-                //console.log(previousCard, 'take');
-            } else if (move.action == 'place' && data == true) {
+            } else if (previousMove.action == 'take') {
+            } else if (previousMove.action == 'place' && data == true) {
                 let validMoves = null;
-                console.log(move);
-                if (move.source == 'stock') {
+                console.log(previousMove.source == 'stock');
+                if (previousMove.source == 'stock') {
                     validMoves = data;
-                    console.log("stock!!!")
                     let currentCard = flipContainer.cards[flipContainer.cards.length - 1];
                     let target = fields.find(f => f.type == previousMove.target);
                     target.cards.push(currentCard);
-                    console.log(target.cards);
                     const sprite = sprites.find((s) => currentCard.face == s.face && currentCard.suit === s.suite);
                     target.addChild(sprite.sprite);
                     flipContainer.removeChild(sprite.sprite);
+                    flipContainer.cards.splice(flipContainer.cards.length - 1, 1);
                 } else {
                     let currentField = fields.find(f => f.type == previousMove.source);
                     previousCard = currentField.cards[Number(previousMove.index)];
                     let targetField = fields.find(f => f.type == previousMove.target);
                     let currentSprite = sprites.find(s => previousCard.face === s.face && previousCard.suit === s.suite);
-                    //console.log(previousCard, currentField, targetField, currentSprite, previousCard, 'take');
                     console.log(currentField.cards, previousMove, 'take')
                     currentField.removeChild(currentSprite.sprite);
                     currentField.cards.splice(Number(previousMove.index), 1);
