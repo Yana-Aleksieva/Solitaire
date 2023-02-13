@@ -21,8 +21,10 @@ export function engine(connection: Connection) {
     let move = null;
     let moves = null;
     let previousMove = null;
+    let previousCard = null;
     let cachedMoves = null;
     let takeSource = null;
+    let fields: GameField[];
 
     connection.on('state', onState);
     connection.on('moves', onMoves);
@@ -66,17 +68,14 @@ export function engine(connection: Connection) {
             // Dependency Injection ???
 
             const container = new Tank(50, 70, state.stock.cards, onFlip.bind(null));
-            // console.log(container.cards)
+      
             flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'waste');
 
-            console.log(state)
             const piles = state.piles;
             const suites = createSuitsImages();
 
-            let fields: GameField[] = getFields(state.piles);
+            fields = getFields(state.piles);
 
-            // render cards in container 
-            //console.log(container.cards)
             container.cards.forEach((card) => {
                 const back: PIXI.Sprite = new PIXI.Sprite(
                     new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
@@ -88,12 +87,11 @@ export function engine(connection: Connection) {
 
 
 
-            //console.log(fields);
             fields.forEach((field) => {
                 let bottomPositon = 0;
                 //render cards from server
                 field.cards.forEach((card, i) => {
-                    // console.log(card);
+                  
                     if (!card.faceUp) {
                         const back: PIXI.Sprite = new PIXI.Sprite(
                             new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
@@ -114,7 +112,7 @@ export function engine(connection: Connection) {
 
             let score = new TextArea("Score: 0");
             let time = new TextArea("Time: 0.0");
-            //const searchCard = cards.find((c) => c.suite = "")
+     
             app.stage.addChild(
                 field,
                 field1,
@@ -150,77 +148,89 @@ export function engine(connection: Connection) {
                 }
             }
 
-            // function onTake() {
+
+            fields.forEach(f => f.on('pointertap', onPlace));
 
 
 
-            // }
+            function onPlace(e: MouseEvent) {
 
-            fields.forEach(f => f.on('pointertap', (e) => {
-
-                let currentSprites = [];
+                const f = e.target as GameField
                 let lastCard = f.cards[f.cards.length - 1];
-                console.log(moves)
-                move = {
-                    action: 'take',
-                    source: `${f.type}`,
-                    target: null,
-                    index: f.cards.indexOf(lastCard)
-
-                };
-                // sprites.find((s) => s.face == data.face && s.suite == data.suit);
-                let target = e.target as GameField;
-
-                connection.send('move', move);
-                // console.log(e.target);
-                // console.log(moves.piles);
-                // console.log(cachedMoves, takeSource);
-                let t;
-                console.log(moves)
-                moves.piles.find((p, i) => {
-                    if (p.place == true) {
-                        t = i;
-                    }
-
-                });
-                let type = target.type.substring(4);
-                console.log(t, moves, type, move.source);
-                if (type == t) {
-                    console.log(moves, e.type, state.piles);
-                    console.log(previousMove)
+                console.log(lastCard, f, 'faceUp')
+                if (lastCard.faceUp == true) {
                     move = {
-                        action: 'place',
-                        source: previousMove.source,
-                        target: move.source,
-                        index: previousMove.index
+                        action: 'take',
+                        source: `${f.type}`,
+                        target: null,
+                        index: f.cards.indexOf(lastCard)
 
                     };
-                    let target = fields.find(f => f.type == move.source);
-                    let source = fields.find(f => f.type == previousMove.source);
-                    console.log(target, source)
+                    let target = e.target as GameField;
 
-                   connection.send('move', move);
-                    console.log(move);
+                    connection.send('move', move);
+                    let indexTrue;
 
-                  
+                    moves.piles.find((p, i) => {
+                        if (p.place == true) {
+                            indexTrue = i;
+                        }
+
+                    });
+                    let type = target.type.substring(4);
+                    //console.log(indexTrue, moves, type, move.source);
+                    if (Number(type) === indexTrue) {
+
+                        console.log(moves, e.type, state.piles);
+                        console.log(previousMove);
+
+                        move = {
+                            action: 'place',
+                            source: previousMove.source,
+                            target: move.source,
+                            index: previousMove.index
+
+                        };
+
+                        connection.send('move', move);
+                        // console.log(move);
+                        let target = fields.find(f => f.type == move.source);
+                        let source = fields.find(f => f.type == previousMove.source);
+                        console.log(target, source);
+
+                    }
+                    previousMove = move;
+
+                } else {
+
+                    move = {
+                        action: 'flip',
+                        source: f.type,
+                        target: null,
+                        index: f.cards.indexOf(lastCard)
+                    };
+                    console.log(move.index, f.cards.indexOf(lastCard));
+                    connection.send('move', move);
                 }
-                previousMove = move;
 
-            }))
+
+
+
+            }
+
+
+
+
+            function onClick() {
+
+            }
+
+            function onMove(moves) {
+                console.log(moves);
+            }
+
 
         }
-
-
-
-
-        function onClick() {
-
-        }
-
-        function onMove(moves) {
-            console.log(moves);
-        }
-
 
     }
     function onResult(data) {
@@ -239,7 +249,7 @@ export function engine(connection: Connection) {
                         const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
                         flipContainer.addChild(currentCard.sprite);
                         // } 
-                        stateToStage(state)
+                        //stateToStage(state)
                     } else {
                         state.waste.cards.reverse();
                         state.stock.cards.push(...state.waste.cards);
@@ -247,32 +257,49 @@ export function engine(connection: Connection) {
                         state.waste.cards.length = 0;
                     }
 
-                } else if (move.action == 'place' && data == true) {
+                }else{
+                    console.log(data, 'resulr')
+                }
+            } else if (move.action == 'take') {
 
-                    let validMoves = null;
-                    if (move.source == 'stock') {
-                        validMoves = data;
-                     
+                //console.log(previousCard, 'take');
+            } else if (move.action == 'place' && data == true) {
 
-                    } else {
-                        console.log(moves)
-                    }
+                let validMoves = null;
+                if (move.source == 'stock') {
+                    validMoves = data;
 
 
+                } else {
 
+
+                    let currentField = fields.find(f => f.type == previousMove.source);
+                    previousCard = currentField.cards[Number(previousMove.index)];
+                    let targetField = fields.find(f => f.type == previousMove.target);
+                    let currentSprite = sprites.find(s => previousCard.face === s.face && previousCard.suit === s.suite);
+                    //console.log(previousCard, currentField, targetField, currentSprite, previousCard, 'take');
+                    console.log(currentField.cards,previousMove, 'take')
+                    currentField.removeChild(currentSprite.sprite);
+                    currentField.cards.splice(Number(previousMove.index), 1);
+                    console.log(currentField.cards, 'take')
+                    targetField.addChild(currentSprite.sprite);
+                    targetField.cards.push(previousCard);
+                    currentSprite.sprite.position.set(0, (targetField.cards.length - 1) * 40 )
 
                 }
             }
 
-        }
-    }
 
+
+
+        }
+
+    }
 
     function onMoves(receivedMoves) {
         moves = receivedMoves;
         console.log('received moves', moves);
-        //console.log(moves);
-        // mergeMoves();
+     
     }
 
     function onState(receivedState) {
