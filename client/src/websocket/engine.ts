@@ -55,8 +55,6 @@ export function engine(connection: Connection) {
         // .then(() => shuffleCards(cards))
         //  .then(() => dealCards(cards, fields, app))
 
-
-
         async function start(state) {
             // create cards
             interface TypeCard {
@@ -84,6 +82,8 @@ export function engine(connection: Connection) {
             //     connection.send('move', move);
                 
             // })
+            flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'stock');
+            flipContainer.on("pointertap", onPlace);
 
             const piles = state.piles;
             const suites = createSuitsImages();
@@ -123,7 +123,7 @@ export function engine(connection: Connection) {
 
             let score = new TextArea("Score: 0");
             let time = new TextArea("Time: 0.0");
-     
+
             app.stage.addChild(
                 field,
                 field1,
@@ -158,6 +158,12 @@ export function engine(connection: Connection) {
 
             fields.forEach(f => f.on('pointertap', onPlace));
 
+            field.on('pointertap', onPlace);
+            field1.on('pointertap', onPlace)
+            field2.on('pointertap', onPlace)
+            field3.on('pointertap', onPlace)
+
+
             function onPlace(e: MouseEvent) {
                 const f = e.target as GameField;
                 
@@ -187,8 +193,12 @@ export function engine(connection: Connection) {
 
                     //console.log(indexTrue, moves, type, move.source);
                     if (Number(type) === indexTrue) {
+
                         console.log(moves, e.type, state.piles);
                         console.log(previousMove);
+
+                        // console.log(moves, e.type, state.piles);
+                        // console.log(previousMove);
 
                         move = {
                             action: 'place',
@@ -250,8 +260,16 @@ export function engine(connection: Connection) {
                         state.stock.cards.forEach(c => c.faceUp = false);
                         state.waste.cards.length = 0;
                     }
-                }else{
-                    console.log(data, 'resulr')
+
+                } else {
+                    //console.log(data, 'resulr');
+                    const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
+                    const currentField = fields.find(f => f.type === move.source);
+                    currentField.removeChild(currentField.children[currentField.children.length - 1]);
+                    currentField.addChild(currentCard.sprite);
+                    currentField.cards.push(data);
+                    currentCard.sprite.position.set(0, (currentField.cards.length - 1) * 40)
+                    // console.log(move.source, currentCard, 'movesss');
                 }
             } else if (move.action == 'take') {
                 //console.log(previousCard, 'take');
@@ -260,32 +278,29 @@ export function engine(connection: Connection) {
                 console.log(move);
                 if (move.source == 'stock') {
                     validMoves = data;
+                    console.log("stock!!!")
                     let currentCard = flipContainer.cards[flipContainer.cards.length - 1];
                     let target = fields.find(f => f.type == previousMove.target);
-                    
                     target.cards.push(currentCard);
                     console.log(target.cards);
-                   
                     const sprite = sprites.find((s) => currentCard.face == s.face && currentCard.suit === s.suite);
-                    
                     target.addChild(sprite.sprite);
-
                     flipContainer.removeChild(sprite.sprite);
-                   
-
                 } else {
                     let currentField = fields.find(f => f.type == previousMove.source);
                     previousCard = currentField.cards[Number(previousMove.index)];
                     let targetField = fields.find(f => f.type == previousMove.target);
                     let currentSprite = sprites.find(s => previousCard.face === s.face && previousCard.suit === s.suite);
                     //console.log(previousCard, currentField, targetField, currentSprite, previousCard, 'take');
-                    console.log(currentField.cards,previousMove, 'take')
+                    console.log(currentField.cards, previousMove, 'take')
                     currentField.removeChild(currentSprite.sprite);
                     currentField.cards.splice(Number(previousMove.index), 1);
                     console.log(currentField.cards, 'take')
                     targetField.addChild(currentSprite.sprite);
                     targetField.cards.push(previousCard);
+
                     currentSprite.sprite.position.set(0, (targetField.cards.length - 1) * 40 )
+                    currentSprite.sprite.position.set(0, (targetField.cards.length ) * 20)
                 }
             }
         }
@@ -294,7 +309,7 @@ export function engine(connection: Connection) {
     function onMoves(receivedMoves) {
         moves = receivedMoves;
         console.log('received moves', moves);
-     
+
     }
 
     function onState(receivedState) {
@@ -311,7 +326,6 @@ export function engine(connection: Connection) {
 
     }
 
-
     function onVictory() {
         alert('Victory!');
         connection.send('newGame');
@@ -321,5 +335,4 @@ export function engine(connection: Connection) {
         console.log(state);
         //  onStart(state)
     }
-
 }
