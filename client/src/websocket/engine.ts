@@ -33,7 +33,7 @@ export function engine(connection: Connection) {
     let sprites = createSprites();
 
 
-    let flipContainer;
+    let flipContainer: GameField;
 
 
 
@@ -69,7 +69,21 @@ export function engine(connection: Connection) {
 
             const container = new Tank(50, 70, state.stock.cards, onFlip.bind(null));
       
-            flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'waste');
+            flipContainer = new GameField(-1, WINDOW_WIDTH / 7 * 2 - 210, 70, state.waste.cards, 'stock');
+            flipContainer.on("pointertap", onPlace)
+            // flipContainer.on("pointertap", () => {
+            //     const lastCard = flipContainer.cards[flipContainer.cards.length - 1];
+            //     const lastIndex = container.cards.indexOf(lastCard);
+
+            //     move = {
+            //         action: 'take',
+            //         source: `stock`,
+            //         target: null,
+            //         index: flipContainer.cards.length - 1
+            //     };
+            //     connection.send('move', move);
+                
+            // })
 
             const piles = state.piles;
             const suites = createSuitsImages();
@@ -85,13 +99,10 @@ export function engine(connection: Connection) {
                 container.addChild(back);
             })
 
-
-
             fields.forEach((field) => {
                 let bottomPositon = 0;
                 //render cards from server
                 field.cards.forEach((card, i) => {
-                  
                     if (!card.faceUp) {
                         const back: PIXI.Sprite = new PIXI.Sprite(
                             new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
@@ -134,7 +145,6 @@ export function engine(connection: Connection) {
                 let currentCard = container.cards[container.cards.length - 1];
 
                 if (currentCard) {
-
                     move = {
                         action,
                         source: type,
@@ -143,21 +153,18 @@ export function engine(connection: Connection) {
                     };
                     // console.log(move.index);
                     connection.send('move', move);
-
-
                 }
             }
 
-
             fields.forEach(f => f.on('pointertap', onPlace));
 
-
-
             function onPlace(e: MouseEvent) {
-
-                const f = e.target as GameField
+                const f = e.target as GameField;
+                
+                console.log(f.type);
                 let lastCard = f.cards[f.cards.length - 1];
                 console.log(lastCard, f, 'faceUp')
+
                 if (lastCard.faceUp == true) {
                     move = {
                         action: 'take',
@@ -175,12 +182,11 @@ export function engine(connection: Connection) {
                         if (p.place == true) {
                             indexTrue = i;
                         }
-
                     });
                     let type = target.type.substring(4);
+
                     //console.log(indexTrue, moves, type, move.source);
                     if (Number(type) === indexTrue) {
-
                         console.log(moves, e.type, state.piles);
                         console.log(previousMove);
 
@@ -189,7 +195,6 @@ export function engine(connection: Connection) {
                             source: previousMove.source,
                             target: move.source,
                             index: previousMove.index
-
                         };
 
                         connection.send('move', move);
@@ -197,7 +202,6 @@ export function engine(connection: Connection) {
                         let target = fields.find(f => f.type == move.source);
                         let source = fields.find(f => f.type == previousMove.source);
                         console.log(target, source);
-
                     }
                     previousMove = move;
 
@@ -212,14 +216,7 @@ export function engine(connection: Connection) {
                     console.log(move.index, f.cards.indexOf(lastCard));
                     connection.send('move', move);
                 }
-
-
-
-
             }
-
-
-
 
             function onClick() {
 
@@ -228,19 +225,15 @@ export function engine(connection: Connection) {
             function onMove(moves) {
                 console.log(moves);
             }
-
-
         }
-
     }
+
     function onResult(data) {
         console.log(move, data, 'onResult');
         if (move != null) {
             // console.log(move.action)
             if (move.action == 'flip') {
                 if (move.source == 'stock') {
-
-
                     if (state.stock.cards.length > 0) {
                         console.log(state);
                         state.stock.cards.pop();
@@ -248,6 +241,7 @@ export function engine(connection: Connection) {
                         flipContainer.cards = state.waste.cards;
                         const currentCard = sprites.find((s) => s.face == data.face && s.suite == data.suit);
                         flipContainer.addChild(currentCard.sprite);
+                        //flipContainer.cards.push(data);
                         // } 
                         //stateToStage(state)
                     } else {
@@ -256,23 +250,30 @@ export function engine(connection: Connection) {
                         state.stock.cards.forEach(c => c.faceUp = false);
                         state.waste.cards.length = 0;
                     }
-
                 }else{
                     console.log(data, 'resulr')
                 }
             } else if (move.action == 'take') {
-
                 //console.log(previousCard, 'take');
             } else if (move.action == 'place' && data == true) {
-
                 let validMoves = null;
+                console.log(move);
                 if (move.source == 'stock') {
                     validMoves = data;
+                    let currentCard = flipContainer.cards[flipContainer.cards.length - 1];
+                    let target = fields.find(f => f.type == previousMove.target);
+                    
+                    target.cards.push(currentCard);
+                    console.log(target.cards);
+                   
+                    const sprite = sprites.find((s) => currentCard.face == s.face && currentCard.suit === s.suite);
+                    
+                    target.addChild(sprite.sprite);
 
+                    flipContainer.removeChild(sprite.sprite);
+                   
 
                 } else {
-
-
                     let currentField = fields.find(f => f.type == previousMove.source);
                     previousCard = currentField.cards[Number(previousMove.index)];
                     let targetField = fields.find(f => f.type == previousMove.target);
@@ -285,15 +286,9 @@ export function engine(connection: Connection) {
                     targetField.addChild(currentSprite.sprite);
                     targetField.cards.push(previousCard);
                     currentSprite.sprite.position.set(0, (targetField.cards.length - 1) * 40 )
-
                 }
             }
-
-
-
-
         }
-
     }
 
     function onMoves(receivedMoves) {
