@@ -19,14 +19,11 @@ export function createSprites() {
         baseTexture,
         new PIXI.Rectangle(x, y, 400, 620)
       );
-      const _back: PIXI.Sprite = new PIXI.Sprite(
-        new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
-      );
       const spriteCard = new PIXI.Sprite(texture);
       spriteCard.width = CARD_WIDTH;
       spriteCard.height = CARD_HEIGHT;
       const container = addMask(spriteCard)
-      sprites.push({ face: names[j], suite: suites[i], sprite: container });
+      sprites.push({ face: names[j], suite: suites[i], sprite: container, power: power });
       const newCard = new Card();
       power++;
       //sprites.push(spriteCard);
@@ -36,6 +33,20 @@ export function createSprites() {
   }
 
   return sprites;
+}
+
+export function createbackSprites() {
+  let backs = [];
+
+  for (let i = 0; i < 52; i++) {
+    const back: PIXI.Sprite = new PIXI.Sprite(
+      new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
+    );
+    back.width = CARD_WIDTH;
+    back.height = CARD_HEIGHT;
+    backs.push(back);
+  }
+  return backs;
 }
 
 function shuffleCards(cards: Card[]) {
