@@ -42,16 +42,9 @@ export class App extends PIXI.Container {
     this.addPiles();
     this.addFounationsCards();
     this.addScore();
-    // this.interactive = true;
-    // this.on("pointertap", onPlace);
+
     this._app.stage.on("pointertap", onPlace);
 
-    // this.stock.on("pointertap", onPlace);
-    // this.piles.forEach((p) => p.on("pointertap", onPlace));
-    // this.foundations.forEach((f) => f.on("pointertap", onPlace));
-
-    // add animations
-    // shuffleCards(this.stock, this.waste);
   }
 
   addScore(){

@@ -108,10 +108,8 @@ export function engine(connection: Connection) {
 
                 target.addChild(sprite.sprite);
                 if (target.cards.length > 0) {
-
-
                   sprite.sprite.position.set(0, target.cards.length * offset);
-                  console.log(sprite.sprite.position.y, target.cards.length)
+       
                 } else {
                   sprite.sprite.position.set(0, 0);
                 }
@@ -148,10 +146,9 @@ export function engine(connection: Connection) {
                     (f) => f.type == previousMove.source
                   );
 
-                  let sprites = [];
+                 const sprites = [];
                   previousCard = currentField.cards[Number(previousMove.index)];
                   let cardsFaceUp = currentField.cards.slice(Number(previousMove.index));
-                  //console.log(cardsFaceUp, 'cards face')
                   let targetField = application.piles.find(
                     (f) => f.type == previousMove.target
                   );
@@ -165,26 +162,23 @@ export function engine(connection: Connection) {
 
                       })
                   );
-                  sprites = sprites.sort((a, b) => Number(b.face) - Number(a.face));
-
-                 
-                  
+                  let sorted = sprites.slice().sort((a, b) => Number(b.face) - Number(a.face));
                   currentField.cards.splice(Number(previousMove.index), cardsFaceUp.length);
-                 
-                  console.log(sprites, 'sprites')
-                  sprites.forEach(s => {
-                    let index = 0;
-                    targetField.addChild(s.sprite)
-                    console.log(s)
-                     if (targetField.cards.length > 0) {
 
-                    s.sprite.position.set(0, targetField.cards.length * offset);
-                     } else if (targetField.cards.length == 0) {
-                    //  // targetField.addChild(s.sprite)
-                       s.sprite.position.set(0, 0)
+                  let index = 0;
+                  sorted.forEach(s => {
+                   
+                    targetField.addChild(s.sprite)
+
+                    if (targetField.cards.length > 0) {
+
+                      s.sprite.position.set(0, targetField.cards.length * offset);
+                    } else if (targetField.cards.length == 0) {
+                      //  // targetField.addChild(s.sprite)
+                      s.sprite.position.set(0, 0)
                     }
                     targetField.cards.push(cardsFaceUp[index]);
-                    currentField.removeChild(s);
+                    currentField.removeChild(s.sprite);
                     index++;
                   });
 
@@ -265,7 +259,7 @@ export function engine(connection: Connection) {
                   cards.push(c)
                 }
               })
-              console.log(cards, 'cards')
+             
               move = {
                 action: "take",
                 source: target.type,
@@ -297,7 +291,7 @@ export function engine(connection: Connection) {
                 };
               } else {
                 let cards = target.cards.map(c => c.faceUp == true);
-                console.log(cards, 'cards')
+            
                 move = {
                   action: "take",
                   source: target.type,
