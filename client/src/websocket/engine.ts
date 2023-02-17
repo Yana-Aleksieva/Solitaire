@@ -3,7 +3,7 @@ import * as PIXI from "pixi.js";
 import { GameField } from "../GameFields";
 import { init } from "../utils/Loader";
 import { App } from "../Application";
-import { CARD_HEIGHT } from "../utils/constants";
+import { CARD_HEIGHT, offset } from "../utils/constants";
 
 export function engine(connection: Connection) {
   let state: any = {};
@@ -39,22 +39,20 @@ export function engine(connection: Connection) {
 
     init();
     function onResult(data) {
-      if (data == null) {
-        console.log("null");
-        //reverseStock();
-      }
+
 
       if (previousMove != null) {
         if (previousMove.action == "flip") {
+          //flip waste
           if (previousMove.source == "stock") {
-            console.log(state.stock.cards.length);
+
             if (application.state.stock.cards.length > 0 && data != null) {
               application.state.stock.cards.splice(state.stock.cards.length - 1, 1);
               application.state.waste.cards.push(data);
               const currentCard = application.sprites.find(
                 (s) => s.face == data.face && s.suite == data.suit
               );
-            
+
               application.waste.addChild(currentCard.sprite);
               application.stock.removeChild(
                 application.stock.children[
@@ -75,6 +73,7 @@ export function engine(connection: Connection) {
                 .reverse();
             }
           } else {
+            //flip pile
             const currentCard = application.sprites.find(
               (s) => s.face == data.face && s.suite == data.suit
             );
@@ -84,49 +83,51 @@ export function engine(connection: Connection) {
             currentField.removeChild(
               currentField.children[currentField.children.length - 1]
             );
-          
+
             currentField.addChild(currentCard.sprite);
             currentField.cards[currentField.cards.length - 1] = data;
-            currentCard.sprite.position.set(
-              0,
-              (currentField.cards.length - 1) * 40);
+            currentCard.sprite.position.set(0, (currentField.cards.length - 1) * offset);
           }
           previousMove = null;
-        } else if (previousMove.action == "take") {
         } else if (previousMove.action == "place") {
           if (data) {
 
-
             if (previousMove.source == "stock") {
+              //target pile
               if (previousMove.target.includes('pile')) {
                 let currentCard =
                   application.waste.cards[application.waste.cards.length - 1];
                 let target = application.piles.find(
                   (f) => f.type == previousMove.target
                 );
-                target.cards.push(currentCard);
+
                 const sprite = application.sprites.find(
                   (s) =>
                     currentCard.face == s.face && currentCard.suit === s.suite
                 );
+
                 target.addChild(sprite.sprite);
-                console.log(previousMove.source == "stock");
                 if (target.cards.length > 0) {
-                  sprite.sprite.position.set(0, target.cards.length * 40)
+
+
+                  sprite.sprite.position.set(0, target.cards.length * offset);
+                  console.log(sprite.sprite.position.y, target.cards.length)
                 } else {
-                  sprite.sprite.position.set(0)
+                  sprite.sprite.position.set(0, 0);
                 }
 
+                target.cards.push(currentCard);
                 application.waste.removeChild(sprite.sprite);
                 application.waste.cards.splice(
                   application.waste.cards.length - 1, 1);
               } else {
+                //target foundation
                 let currentCard =
                   application.waste.cards[application.waste.cards.length - 1];
                 let target = application.foundations.find(
                   (f) => f.suite == previousMove.target
                 );
-                console.log(target.cards)
+
                 target.cards.push(currentCard);
                 const sprite = application.sprites.find(
                   (s) =>
@@ -135,41 +136,63 @@ export function engine(connection: Connection) {
                 target.addChild(sprite.sprite);
                 application.waste.removeChild(sprite.sprite);
                 application.waste.cards.splice(
-                  application.waste.cards.length - 1,
-                  1
-                );
+                  application.waste.cards.length - 1, 1);
               }
 
             } else {
               if (previousMove.source.includes('pile')) {
+                //target pile
+
                 if (previousMove.target.includes('pile')) {
                   let currentField = application.piles.find(
                     (f) => f.type == previousMove.source
                   );
-                  let cardsFaceUp = currentField.cards.map(card => card.faceUp == true);
-                  console.log(currentField.cards)
+
+                  let sprites = [];
                   previousCard = currentField.cards[Number(previousMove.index)];
+                  let cardsFaceUp = currentField.cards.slice(Number(previousMove.index));
+                  //console.log(cardsFaceUp, 'cards face')
                   let targetField = application.piles.find(
                     (f) => f.type == previousMove.target
                   );
                   let currentSprite = application.sprites.find(
                     (s) =>
-                      previousCard.face === s.face && previousCard.suit === s.suite
-                  );
-   
-                  currentField.removeChild(currentSprite.sprite);
-                  currentField.cards.splice(Number(previousMove.index), 1);
-                  targetField.addChild(currentSprite.sprite);
-                  targetField.cards.push(previousCard);
 
-                  currentSprite.sprite.position.set(0, 0);
-                  console.log(targetField);
-                  currentSprite.sprite.position.set(0,targetField.cards.length * 40);
+                      cardsFaceUp.forEach(card => {
+                        if (card.face === s.face && card.suit === s.suite) {
+                          sprites.push(s);
+                        }
+
+                      })
+                  );
+                  sprites = sprites.sort((a, b) => Number(b.face) - Number(a.face));
+
+                 
+                  
+                  currentField.cards.splice(Number(previousMove.index), cardsFaceUp.length);
+                 
+                  console.log(sprites, 'sprites')
+                  sprites.forEach(s => {
+                    let index = 0;
+                    targetField.addChild(s.sprite)
+                    console.log(s)
+                     if (targetField.cards.length > 0) {
+
+                    s.sprite.position.set(0, targetField.cards.length * offset);
+                     } else if (targetField.cards.length == 0) {
+                    //  // targetField.addChild(s.sprite)
+                       s.sprite.position.set(0, 0)
+                    }
+                    targetField.cards.push(cardsFaceUp[index]);
+                    currentField.removeChild(s);
+                    index++;
+                  });
+
 
 
                 } else {
                   //target -foundation
-                  console.log(application.foundations)
+
                   let currentField = application.piles.find(
                     (f) => f.type == previousMove.source
                   );
@@ -186,7 +209,6 @@ export function engine(connection: Connection) {
                   currentField.cards.splice(Number(previousMove.index), 1);
                   targetField.addChild(currentSprite.sprite);
                   targetField.cards.push(previousCard);
-                  console.log(targetField)
                   currentSprite.sprite.position.set(0, 0);
 
                 }
@@ -198,6 +220,8 @@ export function engine(connection: Connection) {
         }
       }
     }
+
+
 
     function onPlace(e: PIXI.FederatedMouseEvent) {
 
@@ -228,19 +252,25 @@ export function engine(connection: Connection) {
             }
 
             lastCard.faceUp = true;
-            //console.log(previousMove.action)
+
           } else {
-            console.log(previousMove, target.cards, lastCard, target.cards.indexOf(lastCard))
+
 
             if (lastCard.faceUp == true && previousMove == null) {
               let last = target.cards[target.cards.length - 1];
-           
+              let cards = []
+              target.cards.map(c => {
 
+                if (c.faceUp == true) {
+                  cards.push(c)
+                }
+              })
+              console.log(cards, 'cards')
               move = {
                 action: "take",
                 source: target.type,
                 target: null,
-                index: target.cards.indexOf(last)
+                index: target.cards.indexOf(cards[0])
               }
             } else if (lastCard.faceUp && previousMove != null) {
               let indexTrue;
@@ -252,13 +282,13 @@ export function engine(connection: Connection) {
                 }
               });
               let indexField = target.type.substring(4);
-              
+
               if (
 
                 (validMoves[indexField])
 
               ) {
-              console.log(validMoves, 'valid moves')
+
                 move = {
                   action: "place",
                   source: previousMove.source,
@@ -266,6 +296,8 @@ export function engine(connection: Connection) {
                   index: previousMove.index,
                 };
               } else {
+                let cards = target.cards.map(c => c.faceUp == true);
+                console.log(cards, 'cards')
                 move = {
                   action: "take",
                   source: target.type,
@@ -273,8 +305,6 @@ export function engine(connection: Connection) {
                   index: target.cards.indexOf(lastCard),
                 }
               }
-
-
             }
           }
         } else {
@@ -285,6 +315,7 @@ export function engine(connection: Connection) {
             index: previousMove.index,
           };
         }
+
       } else if (target.id == -1) {
         const lastCard = target.cards[target.cards.length - 1];
         if (lastCard) {
@@ -320,49 +351,7 @@ export function engine(connection: Connection) {
       previousMove = move;
       connection.send('move', move);
 
-      // function addFromFlipContainer(f: GameField, clickedFieldSuit: string) {
-      //   if (application.waste.cards.length == 0) {
-      //     return false;
-      //   }
 
-      //   const card =
-      //     application.waste.cards[application.waste.cards.length - 1];
-      //   const currentCard = application.sprites.find(
-      //     (s) => s.face == card.face && s.suite == card.suit
-      //   );
-      //   application.waste.cards.splice(application.waste.cards.length - 1, 1);
-      //   if (
-      //     f.cards.length == 0 &&
-      //     currentCard.suite == clickedFieldSuit &&
-      //     currentCard.face == 1
-      //   ) {
-      //     f.addChild(currentCard.sprite);
-      //     f.cards.push(currentCard);
-      //     return true;
-      //   } else if (currentCard.suite == clickedFieldSuit) {
-      //     const lastCardField = f.cards[f.cards.length - 1];
-      //     if (lastCardField && currentCard.power == lastCardField.power + 1) {
-      //       f.addChild(currentCard.sprite);
-      //       f.cards.push(currentCard);
-      //       return true;
-      //     } else {
-      //       throw new Error("Not found!");
-      //     }
-      //   }
-      //   return false;
-      // }
-
-      // function addFromGameField(f: GameField) {
-      //   const indexField = Number(previousMove.source[4]);
-      //   const currentField = application.piles[indexField];
-      //   const lastCard = currentField.cards[currentField.cards.length - 1];
-      //   const card = application.sprites.find(
-      //     (c) => c.face == lastCard.face && c.suite == lastCard.suit
-      //   );
-      //   card.sprite.position.set(0);
-      //   f.cards.push(card);
-      //   f.addChild(card.sprite);
-      // }
     }
   }
 }

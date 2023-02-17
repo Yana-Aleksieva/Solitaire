@@ -2,9 +2,9 @@ import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
 import { shuffleCards } from "./animations";
 import { createSprites, createbackSprites, getFields } from "./utils/Factory";
-import { CARD_HEIGHT, CARD_WIDTH, WINDOW_WIDTH } from "./utils/constants";
+import { CARD_HEIGHT, CARD_WIDTH, offset, WINDOW_WIDTH } from "./utils/constants";
 import { getFoundations } from "./utils/gameField";
-// import { Engine } from "./websocket/engine";
+import { TextArea} from './utils/TextArea'
 
 export class App extends PIXI.Container {
   private _app: PIXI.Application;
@@ -17,6 +17,7 @@ export class App extends PIXI.Container {
   public foundations: GameField[];
   public backs = [];
   public sprites = [];
+  public score: TextArea
 
   constructor(state, onPlace) {
     super();
@@ -40,6 +41,7 @@ export class App extends PIXI.Container {
     this.sprites = createSprites();
     this.addPiles();
     this.addFounationsCards();
+    this.addScore();
     // this.interactive = true;
     // this.on("pointertap", onPlace);
     this._app.stage.on("pointertap", onPlace);
@@ -50,6 +52,12 @@ export class App extends PIXI.Container {
 
     // add animations
     // shuffleCards(this.stock, this.waste);
+  }
+
+  addScore(){
+    this.score = new TextArea('Score: 0');
+    this._app.stage.addChild(this.score);
+    this.score.position.set(screen.width - 300, 30)
   }
 
   addFounationsCards() {
@@ -88,7 +96,7 @@ export class App extends PIXI.Container {
           currentCard.sprite.position.set(0, bottomPositon);
           pile.addChild(currentCard.sprite);
         }
-        bottomPositon += 40;
+        bottomPositon += offset;
       });
     });
   }

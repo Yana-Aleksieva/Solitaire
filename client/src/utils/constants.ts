@@ -10,9 +10,9 @@ export const suites = ['S', 'H', 'C', 'D'];
 export const names = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 ]
-
-export const CARD_WIDTH = 140;
-export const CARD_HEIGHT = 180;
+export const  offset = 20;
+export const CARD_WIDTH = 100;
+export const CARD_HEIGHT = 120;
 
 export const WINDOW_WIDTH = window.innerWidth;
 export const WINDOW_HEIGHT = window.innerHeight;
