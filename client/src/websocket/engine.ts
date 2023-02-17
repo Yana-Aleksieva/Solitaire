@@ -4,6 +4,7 @@ import { GameField } from "../GameFields";
 import { init } from "../utils/Loader";
 import { App } from "../Application";
 import { CARD_HEIGHT, offset } from "../utils/constants";
+import { flipCard, moveCard, selectCard, shuffleCards } from "../animations";
 
 export function engine(connection: Connection) {
   let state: any = {};
@@ -19,6 +20,7 @@ export function engine(connection: Connection) {
   function onState(receivedState) {
     console.log("received state", receivedState);
     state = receivedState;
+
     onStart(state);
   }
 
@@ -35,6 +37,7 @@ export function engine(connection: Connection) {
     connection.on("moveResult", onResult);
 
     const application = new App(state, onPlace);
+    application.isActive = true;
     document.body.appendChild(application.view as HTMLCanvasElement);
 
     init();
@@ -52,7 +55,7 @@ export function engine(connection: Connection) {
               const currentCard = application.sprites.find(
                 (s) => s.face == data.face && s.suite == data.suit
               );
-
+              //application.flip(currentCard.sprite, application.backs[application.backs.length-1])
               application.waste.addChild(currentCard.sprite);
               application.stock.removeChild(
                 application.stock.children[
@@ -72,6 +75,7 @@ export function engine(connection: Connection) {
                 .slice()
                 .reverse();
             }
+           
           } else {
             //flip pile
             const currentCard = application.sprites.find(
@@ -80,12 +84,14 @@ export function engine(connection: Connection) {
             const currentField = application.piles.find(
               (f) => f.type === previousMove.source
             );
+            //flipCard(currentCard.sprite, currentField.children[currentField.children.length - 1])
             currentField.removeChild(
               currentField.children[currentField.children.length - 1]
             );
 
             currentField.addChild(currentCard.sprite);
             currentField.cards[currentField.cards.length - 1] = data;
+    
             currentCard.sprite.position.set(0, (currentField.cards.length - 1) * offset);
           }
           previousMove = null;
@@ -105,11 +111,11 @@ export function engine(connection: Connection) {
                   (s) =>
                     currentCard.face == s.face && currentCard.suit === s.suite
                 );
-
+               // moveCard(sprite.sprite, target)
                 target.addChild(sprite.sprite);
                 if (target.cards.length > 0) {
                   sprite.sprite.position.set(0, target.cards.length * offset);
-       
+
                 } else {
                   sprite.sprite.position.set(0, 0);
                 }
@@ -118,6 +124,7 @@ export function engine(connection: Connection) {
                 application.waste.removeChild(sprite.sprite);
                 application.waste.cards.splice(
                   application.waste.cards.length - 1, 1);
+                  application.score.increaceScore();
               } else {
                 //target foundation
                 let currentCard =
@@ -135,6 +142,7 @@ export function engine(connection: Connection) {
                 application.waste.removeChild(sprite.sprite);
                 application.waste.cards.splice(
                   application.waste.cards.length - 1, 1);
+                  application.score.increaceScore();
               }
 
             } else {
@@ -146,7 +154,7 @@ export function engine(connection: Connection) {
                     (f) => f.type == previousMove.source
                   );
 
-                 const sprites = [];
+                  const sprites = [];
                   previousCard = currentField.cards[Number(previousMove.index)];
                   let cardsFaceUp = currentField.cards.slice(Number(previousMove.index));
                   let targetField = application.piles.find(
@@ -167,7 +175,7 @@ export function engine(connection: Connection) {
 
                   let index = 0;
                   sorted.forEach(s => {
-                   
+
                     targetField.addChild(s.sprite)
 
                     if (targetField.cards.length > 0) {
@@ -182,7 +190,7 @@ export function engine(connection: Connection) {
                     index++;
                   });
 
-
+                  application.score.increaceScore();
 
                 } else {
                   //target -foundation
@@ -204,6 +212,7 @@ export function engine(connection: Connection) {
                   targetField.addChild(currentSprite.sprite);
                   targetField.cards.push(previousCard);
                   currentSprite.sprite.position.set(0, 0);
+                  application.score.increaceScore();
 
                 }
               }
@@ -259,7 +268,7 @@ export function engine(connection: Connection) {
                   cards.push(c)
                 }
               })
-             
+
               move = {
                 action: "take",
                 source: target.type,
@@ -291,7 +300,7 @@ export function engine(connection: Connection) {
                 };
               } else {
                 let cards = target.cards.map(c => c.faceUp == true);
-            
+
                 move = {
                   action: "take",
                   source: target.type,
@@ -312,6 +321,9 @@ export function engine(connection: Connection) {
 
       } else if (target.id == -1) {
         const lastCard = target.cards[target.cards.length - 1];
+        const sprite = application.findSprite(lastCard);
+        //  console.log(sprite)
+        //   selectCard(sprite.sprite);
         if (lastCard) {
           move = {
             action: "take",

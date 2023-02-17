@@ -15,7 +15,7 @@ export class TextArea extends Container {
 
     _label: string;
     text: Text;
-
+    score: number = 0;
     constructor(
 
         label: string,
@@ -31,7 +31,6 @@ export class TextArea extends Container {
         this.text.anchor.set(0.5, 0.5);
         this.label = label;
         this.addChild(this.text);
-
         this.interactive = true;
 
     }
@@ -50,8 +49,11 @@ export class TextArea extends Container {
         this.text.text = '';
     }
 
-   
+    increaceScore() {
+        this.text.text = `Score: ${this.score}`
+        this.score += 10;
+    }
 
-    
+
 
 }

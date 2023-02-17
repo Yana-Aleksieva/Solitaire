@@ -1,10 +1,10 @@
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { shuffleCards } from "./animations";
+import { flipCard, shuffleCards } from "./animations";
 import { createSprites, createbackSprites, getFields } from "./utils/Factory";
 import { CARD_HEIGHT, CARD_WIDTH, offset, WINDOW_WIDTH } from "./utils/constants";
 import { getFoundations } from "./utils/gameField";
-import { TextArea} from './utils/TextArea'
+import { TextArea } from './utils/TextArea'
 
 export class App extends PIXI.Container {
   private _app: PIXI.Application;
@@ -17,7 +17,8 @@ export class App extends PIXI.Container {
   public foundations: GameField[];
   public backs = [];
   public sprites = [];
-  public score: TextArea
+  public score: TextArea;
+  public isActive: boolean = false
 
   constructor(state, onPlace) {
     super();
@@ -26,7 +27,7 @@ export class App extends PIXI.Container {
       width: window.innerWidth,
       height: window.innerHeight,
     });
-    //this._engine = new Engine(connection);
+
     this.initStage(state, onPlace);
   }
 
@@ -42,12 +43,15 @@ export class App extends PIXI.Container {
     this.addPiles();
     this.addFounationsCards();
     this.addScore();
-
+    // if(!this.isActive){
+    //   shuffleCards(this.backs);
+    // }
+    
     this._app.stage.on("pointertap", onPlace);
 
   }
 
-  addScore(){
+  addScore() {
     this.score = new TextArea('Score: 0');
     this._app.stage.addChild(this.score);
     this.score.position.set(screen.width - 300, 30)
@@ -56,13 +60,13 @@ export class App extends PIXI.Container {
   addFounationsCards() {
     this.foundations.forEach(gf => {
       gf.cards.forEach(card => {
-        if(card){
-         let sprite = this.sprites.find(
+        if (card) {
+          let sprite = this.sprites.find(
             (s) => s.face == card.face && s.suite == card.suit
           );
           gf.addChild(sprite.sprite)
         }
-       
+
 
       })
 
@@ -123,5 +127,12 @@ export class App extends PIXI.Container {
     this.foundations = getFoundations(this.state);
     this._app.stage.addChild(...this.foundations);
     console.log(this.foundations)
+  }
+  findSprite(card) {
+    let sprite = this.sprites.find(s => card.face === s.face && card.suit === s.suite);
+    return sprite;
+  }
+  flip(card, bac){
+    flipCard(card, bac)
   }
 }
