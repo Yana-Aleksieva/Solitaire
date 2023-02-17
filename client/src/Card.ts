@@ -49,26 +49,7 @@ export class Card extends PIXI.Container {
    // this.addMask();
   }
 
-  getCurrentField(x: number, y: number): GameField | null {
-
-    if (x >= 77 && x <= 260 && y >= 400 && y <= 750) {
-      return this.fields[0];
-    } else if (x >= 330 && y >= 400 && y <= 750) {
-      return this.fields[1];
-    } else if (x >= 580 && y >= 400 && y <= 750) {
-      return this.fields[2];
-    } else if (x >= 830 && y >= 400 && y <= 750) {
-      return this.fields[3];
-    } else if (x >= 1080 && y >= 400 && y <= 750) {
-      return this.fields[4];
-    } else if (x >= 1300 && y >= 400 && y <= 750) {
-      return this.fields[5];
-    } else if (x >= 1585 && y >= 400 && y <= 750) {
-      return this.fields[6];
-    }
-    return null;
-  }
-
+ 
   get sprite(): PIXI.Sprite {
     return this._face;
   }
@@ -156,75 +137,6 @@ export class Card extends PIXI.Container {
     this.addChild(container, this._back);
   }
 
-  onDragStart(e) {
-    this._dragging = true;
-
-    if (!this.onStart) {
-      const currentField = this.getCurrentField(e.globalX, e.globalY);
-      currentField.removeCard(this);
-    }
-  }
-  onDragEnd(e) {
-
-    this._dragging = false;
-    if (this.position.y < 300) {
-      if (this.position.x > 800 && this.position.x < 1000) {
-
-        const isAdded = addCardInGameField(field, this);
-        if (isAdded) {
-          this.setPosition(-100, -100);
-          //this.app.stage.removeChild(this);
-          this._parent = field;
-        }
-      }
-
-      else if (this.position.x > 1000 && this.position.x < 1250) {
-
-        const isAdded = addCardInGameField(field1, this);
-        if (isAdded) {
-          this.setPosition(-100, -100);
-          //this.app.stage.removeChild(this);
-          this._parent = field1;
-        }
-      } else if (this.position.x > 1250 && this.position.x < 1500) {
-
-        const isAdded = addCardInGameField(field2, this);
-        if (isAdded) {
-          this.setPosition(-100, -100);
-          //this.app.stage.removeChild(this);
-          this._parent = field2;
-        }
-      } else if (this.position.x >= 1500) {
-
-        const isAdded = addCardInGameField(field3, this);
-        if (isAdded) {
-          this.setPosition(-100, -100);
-         // this.app.stage.removeChild(this);
-          this._parent = field3;
-        }
-      }
-    }
-  }
-
-  onDragMove(e) {
-    if (this._dragging && this.isActive) {
-      this.parent.removeChild(this);
-      //this.app.stage.addChild(this);
-      this.position.x = e.globalX;
-      this.position.y = e.globalY;
-    }
-  }
-
-  onClick(e) {
-    if (!this.isActive) {
-      this.flip();
-      if (this.onStart) {
-        //this.callback1();
-      } else {
-        this.flip();
-      }
-    }
-  }
   checkPower(card: Card) {
     if (this.power + 1 == card.power) {
       return true;

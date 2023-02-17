@@ -8,7 +8,7 @@ import { getFoundations } from "./utils/gameField";
 
 export class App extends PIXI.Container {
   private _app: PIXI.Application;
-  private _state;
+  state;
   //private _engine: Engine;
 
   public stock: GameField;
@@ -30,7 +30,7 @@ export class App extends PIXI.Container {
   }
 
   initStage(state, onPlace) {
-    this._state = state;
+    this.state = state;
     this.createStock();
     this.createWaste();
     this.createPiles();
@@ -39,7 +39,7 @@ export class App extends PIXI.Container {
     this.stock.addChild(...this.backs);
     this.sprites = createSprites();
     this.addPiles();
-
+    this.addFounationsCards();
     // this.interactive = true;
     // this.on("pointertap", onPlace);
     this._app.stage.on("pointertap", onPlace);
@@ -49,8 +49,25 @@ export class App extends PIXI.Container {
     // this.foundations.forEach((f) => f.on("pointertap", onPlace));
 
     // add animations
-   // shuffleCards(this.stock, this.waste);
+    // shuffleCards(this.stock, this.waste);
   }
+
+  addFounationsCards() {
+    this.foundations.forEach(gf => {
+      gf.cards.forEach(card => {
+        if(card){
+         let sprite = this.sprites.find(
+            (s) => s.face == card.face && s.suite == card.suit
+          );
+          gf.addChild(sprite.sprite)
+        }
+       
+
+      })
+
+    })
+  }
+
   addPiles() {
     this.piles.forEach((pile) => {
       let bottomPositon = 0;
@@ -81,7 +98,7 @@ export class App extends PIXI.Container {
   }
 
   createStock() {
-    this.stock = new GameField(0, 50, 80, this._state.stock.cards, "stock");
+    this.stock = new GameField(0, 50, 80, this.state.stock.cards, "stock");
     this._app.stage.addChild(this.stock);
   }
 
@@ -90,19 +107,20 @@ export class App extends PIXI.Container {
       -1,
       (WINDOW_WIDTH / 7) * 2 - 210,
       80,
-      this._state.waste.cards,
+      this.state.waste.cards,
       "stock"
     );
     this._app.stage.addChild(this.waste);
   }
 
   createPiles() {
-    this.piles = getFields(this._state.piles);
+    this.piles = getFields(this.state.piles);
     this._app.stage.addChild(...this.piles);
   }
 
   createFoundations() {
-    this.foundations = getFoundations();
+    this.foundations = getFoundations(this.state);
     this._app.stage.addChild(...this.foundations);
+    console.log(this.foundations)
   }
 }
