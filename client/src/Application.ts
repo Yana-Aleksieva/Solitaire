@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import { GameField } from "./GameFields";
-import { flipCard, shuffleCards } from "./animations";
+import { flipCard } from "./animations";
 import { createSprites, createbackSprites, getFields } from "./utils/Factory";
 import { CARD_HEIGHT, CARD_WIDTH, offset, WINDOW_WIDTH } from "./utils/constants";
 import { getFoundations } from "./utils/gameField";
@@ -8,9 +8,8 @@ import { TextArea } from './utils/TextArea'
 
 export class App extends PIXI.Container {
   private _app: PIXI.Application;
-  state;
-  //private _engine: Engine;
-
+  public state: any;
+  
   public stock: GameField;
   public waste: GameField;
   public piles: GameField[];
@@ -18,9 +17,9 @@ export class App extends PIXI.Container {
   public backs = [];
   public sprites = [];
   public score: TextArea;
-  public isActive: boolean = false
+  public isActive: boolean = false;
 
-  constructor(state, onPlace) {
+  constructor(state: any, onPlace: (e: PIXI.FederatedMouseEvent) => void) {
     super();
     this._app = new PIXI.Application({
       background: "0x006E33",
@@ -31,7 +30,7 @@ export class App extends PIXI.Container {
     this.initStage(state, onPlace);
   }
 
-  initStage(state, onPlace) {
+  initStage(state: any, onPlace: (e: PIXI.FederatedMouseEvent) => void) {
     this.state = state;
     this.createStock();
     this.createWaste();
@@ -43,12 +42,7 @@ export class App extends PIXI.Container {
     this.addPiles();
     this.addFounationsCards();
     this.addScore();
-    // if(!this.isActive){
-    //   shuffleCards(this.backs);
-    // }
-    
     this._app.stage.on("pointertap", onPlace);
-
   }
 
   addScore() {
@@ -58,7 +52,7 @@ export class App extends PIXI.Container {
   }
 
   addFounationsCards() {
-    this.foundations.forEach(gf => {
+    this.foundations.forEach((gf: GameField) => {
       gf.cards.forEach(card => {
         if (card) {
           let sprite = this.sprites.find(
@@ -66,15 +60,12 @@ export class App extends PIXI.Container {
           );
           gf.addChild(sprite.sprite)
         }
-
-
       })
-
     })
   }
 
   addPiles() {
-    this.piles.forEach((pile) => {
+    this.piles.forEach((pile: GameField) => {
       let bottomPositon = 0;
       //render cards from server
       pile.cards.forEach((card, i) => {

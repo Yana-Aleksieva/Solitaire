@@ -9,8 +9,6 @@ import { DisplayObject } from "pixi.js";
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
-
-
 export function dealCards(cards: Card[], fields: GameField[], app) {
   const tl = gsap.timeline();
   let index = 0;
