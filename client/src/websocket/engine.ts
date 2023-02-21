@@ -3,7 +3,7 @@ import * as PIXI from "pixi.js";
 import { GameField } from "../GameFields";
 import { init } from "../utils/Loader";
 import { App } from "../Application";
-import { CARD_HEIGHT, offset } from "../utils/constants";
+import { CARD_HEIGHT, CARD_WIDTH, offset } from "../utils/constants";
 import {
   dealCards,
   flipCard,
@@ -11,12 +11,15 @@ import {
   selectCard,
   shuffleCards,
 } from "../animations";
+import { Card } from "../Card";
 
 export function engine(connection: Connection) {
   let state: any = {};
   let moves = null;
   let previousMove = null;
   let previousCard = null;
+  let successMove = false;
+  let lastIndex = -1;
 
   function onMoves(receivedMoves) {
     moves = receivedMoves;
@@ -26,7 +29,6 @@ export function engine(connection: Connection) {
   function onState(receivedState) {
     console.log("received state", receivedState);
     state = receivedState;
-
     onStart(state);
   }
 
@@ -43,6 +45,8 @@ export function engine(connection: Connection) {
     connection.on("moveResult", onResult);
 
     const application = new App(state, onPlace);
+    console.log("piles: ", application.piles);
+
     application.isActive = true;
     document.body.appendChild(application.view as HTMLCanvasElement);
 
@@ -53,7 +57,10 @@ export function engine(connection: Connection) {
         application.state.stock.cards = JSON.parse(
           JSON.stringify(application.waste.cards)
         );
+        application.stock.sprites = [...application.waste.sprites.reverse()];
+        application.stock.addChild(...application.waste.sprites);
         application.state.waste.cards = [];
+        application.waste.sprites = [];
         application.waste.removeChildren(1);
       } else {
         if (previousMove != null) {
@@ -62,20 +69,29 @@ export function engine(connection: Connection) {
             if (previousMove.source == "stock") {
               if (application.state.stock.cards.length > 0 && data != null) {
                 application.state.waste.cards.push(data);
-                application.state.stock.cards.splice(
-                  application.state.stock.cards.length - 1,
-                  1
-                );
                 const currentCard = application.sprites.find(
                   (s) => s.face == data.face && s.suite == data.suit
                 );
                 //application.flip(currentCard.sprite, application.backs[application.backs.length-1])
-                application.waste.addChild(currentCard.sprite);
-                // application.stock.removeChild(
-                //   application.stock.children[
-                //   application.stock.children.length - 1
-                //   ]
-                // );
+                //application.waste.addChild(currentCard.sprite);
+                const newCard = application.stock.sprites[application.stock.sprites.length - 1];
+                newCard.position.set(0, 0);
+                newCard.sprite = currentCard.sprite;
+                newCard.power = currentCard.face;
+                newCard.suite = data.suit;
+                newCard.sprite.renderable = true;
+                application.waste.sprites.push(newCard);
+                application.waste.addChild(newCard);
+                application.stock.removeChild(
+                  application.stock.children[
+                  application.stock.children.length - 1
+                  ]
+                );
+                application.stock.sprites.splice(application.stock.sprites.length - 1, 1);
+                application.state.stock.cards.splice(
+                  application.state.stock.cards.length - 1,
+                  1
+                );
               } else if (
                 data == null &&
                 application.state.stock.cards.length == 0 &&
@@ -100,15 +116,19 @@ export function engine(connection: Connection) {
                 (f) => f.type === previousMove.source
               );
               //flipCard(currentCard.sprite, currentField.children[currentField.children.length - 1])
-              currentField.removeChild(
-                currentField.children[currentField.children.length - 1]
-              );
-              currentField.addChild(currentCard.sprite);
+              // currentField.removeChild(
+              //   currentField.children[currentField.children.length - 1]
+              // );
+              const lastCurrentFieldSprite =  currentField.sprites[currentField.sprites.length - 1];
+              lastCurrentFieldSprite.position.set(0, (currentField.sprites.length - 1) * offset)
+              lastCurrentFieldSprite.sprite = currentCard.sprite;
+
+              //currentField.addChild(currentCard.sprite);
               currentField.cards[currentField.cards.length - 1] = data;
-              currentCard.sprite.position.set(
-                0,
-                (currentField.cards.length - 1) * offset
-              );
+              // currentCard.sprite.position.set(
+              //   0,
+              //   (currentField.sprites.length - 1) * offset
+              // );
             }
             previousMove = null;
           } else if (previousMove.action == "place") {
@@ -118,6 +138,7 @@ export function engine(connection: Connection) {
                 if (previousMove.target.includes("pile")) {
                   let currentCard =
                     application.waste.cards[application.waste.cards.length - 1];
+                  const lastSprite = application.waste.sprites[application.waste.sprites.length - 1];
                   let target = application.piles.find(
                     (f) => f.type == previousMove.target
                   );
@@ -126,9 +147,10 @@ export function engine(connection: Connection) {
                       currentCard.face == s.face && currentCard.suit === s.suite
                   );
                   // moveCard(sprite.sprite, target)
-                  target.addChild(sprite.sprite);
+                  target.addChild(lastSprite);
+                  target.sprites.push(lastSprite);
                   if (target.cards.length > 0) {
-                    sprite.sprite.position.set(0, target.cards.length * offset);
+                    sprite.sprite.position.set(0, target.sprites.length * offset);
                   } else {
                     sprite.sprite.position.set(0, 0);
                   }
@@ -138,6 +160,7 @@ export function engine(connection: Connection) {
                     application.waste.cards.length - 1,
                     1
                   );
+                  application.waste.sprites.splice(application.waste.sprites.length - 1, 1);
                   application.score.increaceScore();
                 } else {
                   //target foundation
@@ -168,45 +191,55 @@ export function engine(connection: Connection) {
                       (f) => f.type == previousMove.source
                     );
                     const sprites = [];
-                    previousCard =
-                      currentField.cards[Number(previousMove.index)];
-                    let cardsFaceUp = currentField.cards.slice(
+                    previousCard = currentField.cards[Number(previousMove.index)];
+                    let cardsFaceUp = currentField.sprites.slice(
                       Number(previousMove.index)
                     );
+                    console.log(previousMove.index);
+                    console.log(cardsFaceUp);
                     let targetField = application.piles.find(
                       (f) => f.type == previousMove.target
                     );
-                    let currentSprite = application.sprites.find((s) =>
-                      cardsFaceUp.forEach((card) => {
-                        if (card.face === s.face && card.suit === s.suite) {
-                          sprites.push(s);
-                        }
-                      })
-                    );
-                    let sorted = sprites
-                      .slice()
-                      .sort((a, b) => Number(b.face) - Number(a.face));
+                    // let currentSprite = application.sprites.find((s) =>
+                    //   cardsFaceUp.forEach((card) => {
+                    //     if (card.face === s.face && card.suit === s.suite) {
+                    //       sprites.push(s);
+                    //     }
+                    //   })
+                    // );
+                    let sorted = cardsFaceUp;
+                      // .slice()
+                      // .sort((a, b) => Number(b.face) - Number(a.face));
+                    console.log(sorted);
+
+                    let index = 0;
+                    sorted.forEach((s) => {
+                      targetField.addChild(s);
+                      if (targetField.cards.length > 0) {
+                        s.position.set(
+                          0,
+                          targetField.sprites.length * offset
+                        );
+                      } else if (targetField.cards.length == 0) {
+                        //  // targetField.addChild(s.sprite)
+                        s.position.set(0, 0);
+                      }
+                      targetField.cards.push(cardsFaceUp[index]);
+                      currentField.removeChild(s);
+                      index++;
+                    });                    
+
+                    targetField.sprites.push(currentField.sprites[previousMove.index]);
+
                     currentField.cards.splice(
                       Number(previousMove.index),
                       cardsFaceUp.length
                     );
 
-                    let index = 0;
-                    sorted.forEach((s) => {
-                      targetField.addChild(s.sprite);
-                      if (targetField.cards.length > 0) {
-                        s.sprite.position.set(
-                          0,
-                          targetField.cards.length * offset
-                        );
-                      } else if (targetField.cards.length == 0) {
-                        //  // targetField.addChild(s.sprite)
-                        s.sprite.position.set(0, 0);
-                      }
-                      targetField.cards.push(cardsFaceUp[index]);
-                      currentField.removeChild(s.sprite);
-                      index++;
-                    });
+                    currentField.sprites.splice(
+                      Number(previousMove.index),
+                      cardsFaceUp.length
+                    );
 
                     application.score.increaceScore();
                   } else {
@@ -224,79 +257,97 @@ export function engine(connection: Connection) {
                         previousCard.face === s.face &&
                         previousCard.suit === s.suite
                     );
-
-                    currentField.removeChild(currentSprite.sprite);
-                    currentField.cards.splice(Number(previousMove.index), 1);
-                    targetField.addChild(currentSprite.sprite);
+                      console.log(targetField);
+                    //currentField.removeChild(currentSprite.sprite);
+                   // targetField.addChild(currentSprite.sprite);
                     targetField.cards.push(previousCard);
+                    targetField.sprites.push(currentField.sprites[previousMove.index]);
+                    targetField.addChild(currentField.sprites[previousMove.index]);
+                    currentField.cards.splice(Number(previousMove.index), 1);
+                    currentField.sprites.splice(Number(previousMove.index), 1);
                     currentSprite.sprite.position.set(0, 0);
                     application.score.increaceScore();
                   }
                 }
               }
+              successMove = true;
             }
             previousMove = null;
           }
         }
+        successMove = true;
       }
     }
 
     function onPlace(e: PIXI.FederatedMouseEvent) {
+      console.log(previousMove);
       let move = null;
+
       let target = e.target as GameField;
+      if (!(target as GameField)?.cards ) {
+        target = e.target?.parent as GameField;
+      }
+      // let target = e.target.parent as GameField;
+      // if ((e.target as GameField).type == "foundation") {
+      //   target = e.target as GameField;
+      // }
+
       const type = target.type;
-      if (target.type === "stock" && target.id == 0) {
+      if (target.type === 'stock' && target.id == 0) {
         move = {
           action: "flip",
           source: "stock",
           target: null,
           index: target.cards.indexOf(target.cards[target.cards.length - 1]),
-        };
-      } else if (type.includes("pile")) {
+        }
+      } else if (type.includes('pile')) {
         let lastCard = target.cards[target.cards.length - 1];
-        console.log(target.cards);
         if (lastCard) {
+
           if (lastCard.faceUp == false) {
             move = {
               action: "flip",
               source: target.type,
               target: null,
               index: target.cards.indexOf(lastCard),
-            };
+            }
             lastCard.faceUp = true;
           } else {
             if (lastCard.faceUp == true && previousMove == null) {
               let last = target.cards[target.cards.length - 1];
-              let cards = [];
-              target.cards.map((c) => {
-                if (c.faceUp == true) {
-                  cards.push(c);
-                }
-              });
+              let cards = []
+              target.cards.map(c => {
 
-              let action = "take";
-              if (previousMove && previousMove.action == "take") {
-                action = "place";
-              }
+                if (c.faceUp == true) {
+                  cards.push(c)
+                }
+              })
 
               move = {
-                action: action,
+                action: "take",
                 source: target.type,
                 target: null,
-                index: target.cards.indexOf(cards[0]),
-              };
+                index: target.cards.indexOf(cards[0])
+              }
+              console.log(cards)
+
             } else if (lastCard.faceUp && previousMove != null) {
-             let indexTrue;
+              let indexTrue;
               let validMoves = {};
               moves.piles.find((p, i) => {
                 if (p.place == true) {
                   indexTrue = i;
-                  validMoves[i] = p;
+                  validMoves[i] = p
                 }
               });
-              console.log(indexTrue)
               let indexField = target.type.substring(4);
-              if (validMoves[indexField]) {
+
+              if (
+
+                (validMoves[indexField])
+
+              ) {
+
                 move = {
                   action: "place",
                   source: previousMove.source,
@@ -304,18 +355,15 @@ export function engine(connection: Connection) {
                   index: previousMove.index,
                 };
               } else {
-                let cards = target.cards.map((c) => c.faceUp == true);
+                let cards = target.cards.map(c => c.faceUp == true);
 
-                let action = "take";
-                if (previousMove && previousMove.action == "take") {
-                  action = "place";
-                }
                 move = {
-                  action: action,
+                  action: "take",
                   source: target.type,
                   target: null,
                   index: target.cards.indexOf(lastCard),
-                };
+                }
+                console.log(cards)
               }
             }
           }
@@ -327,29 +375,28 @@ export function engine(connection: Connection) {
             index: previousMove.index,
           };
         }
+
       } else if (target.id == -1) {
         const lastCard = target.cards[target.cards.length - 1];
-        console.log(target.cards);
         const sprite = application.findSprite(lastCard);
-        //  console.log(sprite)
-        //   selectCard(sprite.sprite);
+
         if (lastCard) {
           move = {
             action: "take",
             source: target.type,
             target: null,
             index: target.cards.indexOf(lastCard),
-          };
+          }
+          console.log(lastCard)
         }
-      } else if (type == "foundation") {
+
+      } else if (type == 'foundation') {
         let indexTrue;
         moves.piles.find((p, i) => {
           if (p.place == true) {
-            //indexTrue = i;
-            return i
+            indexTrue = i;
           }
         });
-        console.log(indexTrue);
         if (
           (Number(type) === indexTrue && target.type == "stock") ||
           (Number(type) == indexTrue && target.type.includes("pile")) ||
@@ -360,11 +407,14 @@ export function engine(connection: Connection) {
             source: previousMove.source,
             target: `${target.suite}`,
             index: previousMove.index,
-          };
-        }
+          }
+        };
       }
-      previousMove = move;
-      connection.send("move", move);
+
+      if (move) {
+        connection.send('move', move);
+        previousMove = move;
+      }
     }
   }
 }

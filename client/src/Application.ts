@@ -5,11 +5,12 @@ import { createSprites, createbackSprites, getFields } from "./utils/Factory";
 import { CARD_HEIGHT, CARD_WIDTH, offset, WINDOW_WIDTH } from "./utils/constants";
 import { getFoundations } from "./utils/gameField";
 import { TextArea } from './utils/TextArea'
+import { Card } from "./Card";
 
 export class App extends PIXI.Container {
   private _app: PIXI.Application;
   public state: any;
-  
+
   public stock: GameField;
   public waste: GameField;
   public piles: GameField[];
@@ -37,7 +38,7 @@ export class App extends PIXI.Container {
     this.createPiles();
     this.createFoundations();
     this.backs = createbackSprites();
-    this.stock.addChild(...this.backs);
+    //this.stock.addChild(...this.backs);
     this.sprites = createSprites();
     this.addPiles();
     this.addFounationsCards();
@@ -69,24 +70,26 @@ export class App extends PIXI.Container {
       let bottomPositon = 0;
       //render cards from server
       pile.cards.forEach((card, i) => {
+        const newCard = new Card();
         if (!card.faceUp) {
-          const back: PIXI.Sprite = new PIXI.Sprite(
-            new PIXI.Texture(new PIXI.BaseTexture("/assets/back.png"))
-          );
-          back.width = CARD_WIDTH;
-          back.height = CARD_HEIGHT;
-          back.position.set(0, bottomPositon);
-          pile.addChild(back);
+          newCard.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2 + bottomPositon);
         } else {
           const currentCard = this.sprites.find(
             (s) => s.face == card.face && s.suite == card.suit
           );
+          //console.log("currentCard);
           currentCard.sprite.position.set(0, bottomPositon);
-          pile.addChild(currentCard.sprite);
+          newCard.sprite = currentCard.sprite;
+          newCard.suite = currentCard.suite;
+          newCard.power = currentCard.face;
         }
+        pile.addChild(newCard);
+        pile.sprites.push(newCard);
+        // pile.cards.push(card);
         bottomPositon += offset;
       });
     });
+    console.log(this.piles);
   }
 
   get view() {
@@ -95,6 +98,12 @@ export class App extends PIXI.Container {
 
   createStock() {
     this.stock = new GameField(0, 50, 80, this.state.stock.cards, "stock");
+    this.stock.cards.forEach((card) => {
+      const c = new Card();
+      this.stock.sprites.push(c);
+      c.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
+      this.stock.addChild(c);
+    })
     this._app.stage.addChild(this.stock);
   }
 
@@ -123,7 +132,7 @@ export class App extends PIXI.Container {
     let sprite = this.sprites.find(s => card.face === s.face && card.suit === s.suite);
     return sprite;
   }
-  flip(card, bac){
+  flip(card, bac) {
     flipCard(card, bac)
   }
 }

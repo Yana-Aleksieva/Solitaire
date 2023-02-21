@@ -12,7 +12,7 @@ export function createSprites() {
 
   for (let i = 0; i <= 3; i++) {
     let x = 50;
-    let power = 0;
+    let power = 1;
     let suite = suites[i];
     for (let j = 0; j <= 12; j++) {
       const texture = new PIXI.Texture(

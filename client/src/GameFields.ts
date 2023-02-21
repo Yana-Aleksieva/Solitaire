@@ -16,7 +16,7 @@ export class GameField extends PIXI.Container {
   private _image: PIXI.Sprite;
   private _imageContainer: PIXI.Container;
   type: string
-
+  public sprites: Card[] = [];
 
   constructor(
     public id: number,
@@ -38,8 +38,8 @@ export class GameField extends PIXI.Container {
       (this.position.y = y),
       this.createField();
     this.interactive = true;
-    this.type = type
-    this.on('pointertap', this.onClick.bind(this))
+    this.type = type;
+   // this.on('pointertap', this.onClick.bind(this))
   }
 
   get suite() {
