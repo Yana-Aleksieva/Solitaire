@@ -52,16 +52,26 @@ export function engine(connection: Connection) {
 
     init();
     function onResult(data) {
-      console.log(data);
+      if (application.state.stock.cards.length == 2) {
+        console.log("console.log")
+      }
+      console.log(application.stock.sprites);
       if (data == null) {
         application.state.stock.cards = JSON.parse(
           JSON.stringify(application.waste.cards)
         );
         application.stock.sprites = [...application.waste.sprites.reverse()];
-        application.stock.addChild(...application.waste.sprites);
+        application.stock.addChild(...application.stock.sprites);
         application.state.waste.cards = [];
         application.waste.sprites = [];
-        application.waste.removeChildren(1);
+        application.stock.sprites.forEach((s) => {
+          s.faceUp = false;
+          s.removeChild(s.sprite);
+        });
+        application.stock.cards.forEach((c) => c.faceUp = false);
+
+        
+        //application.waste.removeChildren()
       } else {
         if (previousMove != null) {
           if (previousMove.action == "flip") {
@@ -82,11 +92,13 @@ export function engine(connection: Connection) {
                 newCard.sprite.renderable = true;
                 application.waste.sprites.push(newCard);
                 application.waste.addChild(newCard);
-                application.stock.removeChild(
-                  application.stock.children[
-                  application.stock.children.length - 1
-                  ]
-                );
+                if (application.stock.children.length > 2) {
+                  application.stock.removeChild(
+                    application.stock.children[
+                    application.stock.children.length - 1
+                    ]
+                  );
+                }
                 application.stock.sprites.splice(application.stock.sprites.length - 1, 1);
                 application.state.stock.cards.splice(
                   application.state.stock.cards.length - 1,
