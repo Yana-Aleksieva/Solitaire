@@ -32,6 +32,7 @@ export class App extends PIXI.Container {
   }
 
   initStage(state: any, onPlace: (e: PIXI.FederatedMouseEvent) => void) {
+    this.sprites = createSprites();
     this.state = state;
     this.createStock();
     this.createWaste();
@@ -39,7 +40,7 @@ export class App extends PIXI.Container {
     this.createFoundations();
     this.backs = createbackSprites();
     //this.stock.addChild(...this.backs);
-    this.sprites = createSprites();
+
     this.addPiles();
     this.addFounationsCards();
     this.addScore();
@@ -71,19 +72,20 @@ export class App extends PIXI.Container {
       //render cards from server
       pile.cards.forEach((card, i) => {
         const newCard = new Card();
+        pile.addChild(newCard);
         if (!card.faceUp) {
-          newCard.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2 + bottomPositon);
+          newCard.position.set(0,  bottomPositon);
         } else {
           const currentCard = this.sprites.find(
-            (s) => s.face == card.face && s.suite == card.suit
-          );
-          //console.log("currentCard);
-          currentCard.sprite.position.set(0, bottomPositon);
+            (s) => s.face == card.face && s.suite == card.suit);
+          console.log("currentCard");
+
           newCard.sprite = currentCard.sprite;
           newCard.suite = currentCard.suite;
           newCard.power = currentCard.face;
+         newCard.position.set(0, bottomPositon);
         }
-        pile.addChild(newCard);
+
         pile.sprites.push(newCard);
         // pile.cards.push(card);
         bottomPositon += offset;
@@ -101,8 +103,9 @@ export class App extends PIXI.Container {
     this.stock.cards.forEach((card) => {
       const c = new Card();
       this.stock.sprites.push(c);
-      c.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
+
       this.stock.addChild(c);
+      //c.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
     })
     this._app.stage.addChild(this.stock);
   }
@@ -115,6 +118,17 @@ export class App extends PIXI.Container {
       this.state.waste.cards,
       "stock"
     );
+    // console.log(this.waste.sprites)
+    this.waste.cards.forEach(s => {
+      const card = new Card();
+      const spriteCard = this.sprites.find(c => c.face == s.face && c.suite == s.suit);
+
+      card.sprite = spriteCard.sprite;
+      this.waste.addChild(card);
+     // card.position.set(CARD_WIDTH / 2, CARD_HEIGHT / 2);
+      //s.sprite.renderable = true
+    })
+    console.log(this.waste.sprites);
     this._app.stage.addChild(this.waste);
   }
 
